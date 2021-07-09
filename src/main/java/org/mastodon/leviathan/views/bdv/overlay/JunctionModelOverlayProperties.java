@@ -117,7 +117,7 @@ public class JunctionModelOverlayProperties implements OverlayProperties< Juncti
 	@Override
 	public void getCovariance( final Junction v, final double[][] mat )
 	{
-		throw new UnsupportedOperationException( "Cannot set the covariance of a junction." );
+		return;
 	}
 
 	@Override
