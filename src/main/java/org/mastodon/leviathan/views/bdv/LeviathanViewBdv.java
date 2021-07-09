@@ -48,6 +48,7 @@ import org.mastodon.leviathan.model.JunctionGraph;
 import org.mastodon.leviathan.model.JunctionModel;
 import org.mastodon.leviathan.model.MembranePart;
 import org.mastodon.leviathan.views.LeviathanView;
+import org.mastodon.leviathan.views.bdv.overlay.EditJunctionBehaviours;
 import org.mastodon.leviathan.views.bdv.overlay.JunctionModelOverlayProperties;
 import org.mastodon.leviathan.views.bdv.overlay.JunctionOverlayGraphRenderer;
 import org.mastodon.mamut.MainWindow;
@@ -66,6 +67,7 @@ import org.mastodon.views.bdv.SharedBigDataViewerData;
 import org.mastodon.views.bdv.ViewerFrameMamut;
 import org.mastodon.views.bdv.overlay.BdvHighlightHandler;
 import org.mastodon.views.bdv.overlay.BdvSelectionBehaviours;
+import org.mastodon.views.bdv.overlay.EditBehaviours;
 import org.mastodon.views.bdv.overlay.OverlayNavigation;
 import org.mastodon.views.bdv.overlay.wrap.OverlayEdgeWrapper;
 import org.mastodon.views.bdv.overlay.wrap.OverlayGraphWrapper;
@@ -190,11 +192,9 @@ public class LeviathanViewBdv extends LeviathanView< OverlayGraphWrapper< Juncti
 		HighlightBehaviours.install( viewBehaviours, viewGraph, viewGraph.getLock(), viewGraph, highlightModel, model );
 		FocusActions.install( viewActions, viewGraph, viewGraph.getLock(), navigateFocusModel, selectionModel );
 
-		// TODO
 		BdvSelectionBehaviours.install( viewBehaviours, viewGraph, junctionOverlay, selectionModel, focusModel, navigationHandler );
-//		EditBehaviours.install( viewBehaviours, viewGraph, junctionOverlay, selectionModel, focusModel, model );
-//		EditSpecialBehaviours.install( viewBehaviours, frame.getViewerPanel(), viewGraph, junctionOverlay, selectionModel, focusModel, model );
-//		OverlayActions.install( viewActions, viewer, junctionOverlay );
+		EditBehaviours.install( viewBehaviours, viewGraph, junctionOverlay, selectionModel, focusModel, model );
+		EditJunctionBehaviours.install( viewBehaviours, frame.getViewerPanel(), viewGraph, junctionOverlay, model );
 
 		NavigationActions.install( viewActions, viewer, sharedBdvData.is2D() );
 		viewer.getTransformEventHandler().install( viewBehaviours );
