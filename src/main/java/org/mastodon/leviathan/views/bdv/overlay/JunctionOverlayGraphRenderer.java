@@ -47,20 +47,16 @@ import org.mastodon.spatial.SpatioTemporalIndex;
 import org.mastodon.ui.coloring.GraphColorGenerator;
 import org.mastodon.util.GeometryUtil;
 import org.mastodon.views.bdv.overlay.OverlayContext;
-import org.mastodon.views.bdv.overlay.OverlayEdge;
-import org.mastodon.views.bdv.overlay.OverlayGraph;
 import org.mastodon.views.bdv.overlay.OverlayGraphRenderer;
-import org.mastodon.views.bdv.overlay.OverlayVertex;
 import org.mastodon.views.bdv.overlay.util.BdvRendererUtil;
 
-import bdv.util.Affine3DHelpers;
 import net.imglib2.RealPoint;
 import net.imglib2.algorithm.kdtree.ConvexPolytope;
 import net.imglib2.neighborsearch.NearestNeighborSearch;
 import net.imglib2.realtransform.AffineTransform3D;
 import net.imglib2.type.numeric.ARGBType;
 
-public class JunctionOverlayGraphRenderer< V extends OverlayVertex< V, E >, E extends OverlayEdge< E, V > >
+public class JunctionOverlayGraphRenderer< V extends JunctionOverlayVertex< V, E >, E extends JunctionOverlayEdge< E, V > >
 		implements OverlayGraphRenderer< V, E >
 {
 
@@ -72,7 +68,7 @@ public class JunctionOverlayGraphRenderer< V extends OverlayVertex< V, E >, E ex
 
 	private int renderTimepoint;
 
-	private final OverlayGraph< V, E > graph;
+	private final JunctionOverlayGraph< V, E > graph;
 
 	private final SpatioTemporalIndex< V > index;
 
@@ -87,7 +83,7 @@ public class JunctionOverlayGraphRenderer< V extends OverlayVertex< V, E >, E ex
 	private JunctionRenderSettings settings;
 
 	public JunctionOverlayGraphRenderer(
-			final OverlayGraph< V, E > graph,
+			final JunctionOverlayGraph< V, E > graph,
 			final HighlightModel< V, E > highlight,
 			final FocusModel< V, E > focus,
 			final SelectionModel< V, E > selection,
@@ -250,8 +246,8 @@ public class JunctionOverlayGraphRenderer< V extends OverlayVertex< V, E >, E ex
 			final AffineTransform3D transform,
 			final int timepoint )
 	{
-		final double globalToViewerScale = Affine3DHelpers.extractScale( transform, 0 );
-		final double border = globalToViewerScale * Math.sqrt( graph.getMaxBoundingSphereRadiusSquared( timepoint ) );
+//		final double globalToViewerScale = Affine3DHelpers.extractScale( transform, 0 );
+		final double border = 0.; // TODO
 		return BdvRendererUtil.getPolytopeGlobal( transform,
 				xMin - border, xMax + border,
 				yMin - border, yMax + border,
@@ -389,6 +385,7 @@ public class JunctionOverlayGraphRenderer< V extends OverlayVertex< V, E >, E ex
 					}
 					if ( isHighlighted )
 						graphics.setStroke( highlightedEdgeStroke );
+
 					graphics.drawLine( x0, y0, x1, y1 );
 					if ( isHighlighted )
 						graphics.setStroke( defaultEdgeStroke );

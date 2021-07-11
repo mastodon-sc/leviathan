@@ -31,9 +31,9 @@ package org.mastodon.leviathan.views.bdv.overlay;
 import org.mastodon.leviathan.model.Junction;
 import org.mastodon.leviathan.model.JunctionGraph;
 import org.mastodon.leviathan.model.MembranePart;
-import org.mastodon.views.bdv.overlay.wrap.OverlayProperties;
+import org.mastodon.leviathan.views.bdv.overlay.wrap.JunctionOverlayProperties;
 
-public class JunctionModelOverlayProperties implements OverlayProperties< Junction, MembranePart >
+public class JunctionModelOverlayProperties implements JunctionOverlayProperties< Junction, MembranePart >
 {
 	private final JunctionGraph modelGraph;
 
@@ -91,21 +91,21 @@ public class JunctionModelOverlayProperties implements OverlayProperties< Juncti
 	}
 
 	@Override
-	public MembranePart initEdge( final MembranePart MembranePart )
+	public MembranePart initEdge( final MembranePart e )
 	{
-		return MembranePart.init();
+		return e.init();
 	}
 
 	@Override
-	public void removeEdge( final MembranePart edge )
+	public void removeEdge( final MembranePart e )
 	{
-		modelGraph.remove( edge );
+		modelGraph.remove( e );
 	}
 
 	@Override
-	public void removeVertex( final Junction vertex )
+	public void removeVertex( final Junction v )
 	{
-		modelGraph.remove( vertex );
+		modelGraph.remove( v );
 	}
 
 	@Override
@@ -115,49 +115,19 @@ public class JunctionModelOverlayProperties implements OverlayProperties< Juncti
 	}
 
 	@Override
-	public void getCovariance( final Junction v, final double[][] mat )
+	public double[] getPixels( final MembranePart e )
 	{
-		return;
+		return e.getPixels();
 	}
 
 	@Override
-	public void setCovariance( final Junction v, final double[][] mat )
+	public void setPixels( final MembranePart e, final double[] pixels )
 	{
-		throw new UnsupportedOperationException( "Cannot set the covariance of a junction." );
+		e.setPixels( pixels );
 	}
 
 	@Override
-	public String getLabel( final Junction v )
-	{
-		return null;
-	}
-
-	@Override
-	public void setLabel( final Junction v, final String label )
-	{
-		throw new UnsupportedOperationException( "Cannot set the label of a junction." );
-	}
-
-	@Override
-	public double getBoundingSphereRadiusSquared( final Junction v )
-	{
-		return 0;
-	}
-
-	@Override
-	public double getMaxBoundingSphereRadiusSquared( final int timepoint )
-	{
-		return 0;
-	}
-
-	@Override
-	public Junction initVertex( final Junction v, final int timepoint, final double[] position, final double radius )
-	{
-		return v.init( timepoint, position );
-	}
-
-	@Override
-	public Junction initVertex( final Junction v, final int timepoint, final double[] position, final double[][] covariance )
+	public Junction initVertex( final Junction v, final int timepoint, final double[] position )
 	{
 		return v.init( timepoint, position );
 	}

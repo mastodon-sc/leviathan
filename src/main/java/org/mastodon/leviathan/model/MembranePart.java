@@ -32,4 +32,14 @@ public class MembranePart extends AbstractListenableEdge< MembranePart, Junction
 	{
 		super.initDone();
 	}
+
+	public void setPixels( final double[] pixels )
+	{
+		pool.pixels.set( this, pixels );
+	}
+
+	public double[] getPixels()
+	{
+		return pool.pixels.get( this );
+	}
 }

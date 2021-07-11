@@ -48,9 +48,12 @@ import org.mastodon.leviathan.model.JunctionGraph;
 import org.mastodon.leviathan.model.JunctionModel;
 import org.mastodon.leviathan.model.MembranePart;
 import org.mastodon.leviathan.views.LeviathanView;
-import org.mastodon.leviathan.views.bdv.overlay.EditJunctionBehaviours;
 import org.mastodon.leviathan.views.bdv.overlay.JunctionModelOverlayProperties;
 import org.mastodon.leviathan.views.bdv.overlay.JunctionOverlayGraphRenderer;
+import org.mastodon.leviathan.views.bdv.overlay.JunctionOverlayNavigation;
+import org.mastodon.leviathan.views.bdv.overlay.wrap.JunctionOverlayEdgeWrapper;
+import org.mastodon.leviathan.views.bdv.overlay.wrap.JunctionOverlayGraphWrapper;
+import org.mastodon.leviathan.views.bdv.overlay.wrap.JunctionOverlayVertexWrapper;
 import org.mastodon.mamut.MainWindow;
 import org.mastodon.mamut.MamutMenuBuilder;
 import org.mastodon.mamut.UndoActions;
@@ -67,17 +70,15 @@ import org.mastodon.views.bdv.SharedBigDataViewerData;
 import org.mastodon.views.bdv.ViewerFrameMamut;
 import org.mastodon.views.bdv.overlay.BdvHighlightHandler;
 import org.mastodon.views.bdv.overlay.BdvSelectionBehaviours;
-import org.mastodon.views.bdv.overlay.EditBehaviours;
-import org.mastodon.views.bdv.overlay.OverlayNavigation;
-import org.mastodon.views.bdv.overlay.wrap.OverlayEdgeWrapper;
-import org.mastodon.views.bdv.overlay.wrap.OverlayGraphWrapper;
-import org.mastodon.views.bdv.overlay.wrap.OverlayVertexWrapper;
 
 import bdv.BigDataViewerActions;
 import bdv.viewer.NavigationActions;
 import bdv.viewer.ViewerPanel;
 
-public class LeviathanViewBdv extends LeviathanView< OverlayGraphWrapper< Junction, MembranePart >, OverlayVertexWrapper< Junction, MembranePart >, OverlayEdgeWrapper< Junction, MembranePart > >
+public class LeviathanViewBdv extends LeviathanView< 
+	JunctionOverlayGraphWrapper< Junction, MembranePart >, 
+	JunctionOverlayVertexWrapper< Junction, MembranePart >, 
+	JunctionOverlayEdgeWrapper< Junction, MembranePart > >
 {
 	private static int bdvName = 1;
 
@@ -96,7 +97,7 @@ public class LeviathanViewBdv extends LeviathanView< OverlayGraphWrapper< Juncti
 	public LeviathanViewBdv( final LeviathanAppModel appModel )
 	{
 		super( appModel,
-				new OverlayGraphWrapper<>(
+				new JunctionOverlayGraphWrapper<>(
 						appModel.getModel().getGraph(),
 						appModel.getModel().getGraphIdBimap(),
 						appModel.getModel().getSpatioTemporalIndex(),
@@ -135,9 +136,6 @@ public class LeviathanViewBdv extends LeviathanView< OverlayGraphWrapper< Juncti
 						item( UndoActions.REDO ),
 						separator(),
 						item( SelectionActions.DELETE_SELECTION ),
-						item( SelectionActions.SELECT_WHOLE_TRACK ),
-						item( SelectionActions.SELECT_TRACK_DOWNWARD ),
-						item( SelectionActions.SELECT_TRACK_UPWARD ),
 						separator(),
 						tagSetMenu( tagSetMenuHandle ) ),
 				ViewMenuBuilder.menu( "Settings",
@@ -147,10 +145,10 @@ public class LeviathanViewBdv extends LeviathanView< OverlayGraphWrapper< Juncti
 
 		viewer = bdv.getViewer();
 
-		final GraphColorGeneratorAdapter< Junction, MembranePart, OverlayVertexWrapper< Junction, MembranePart >, OverlayEdgeWrapper< Junction, MembranePart > > coloring =
+		final GraphColorGeneratorAdapter< Junction, MembranePart, JunctionOverlayVertexWrapper< Junction, MembranePart >, JunctionOverlayEdgeWrapper< Junction, MembranePart > > coloring =
 				new GraphColorGeneratorAdapter<>( viewGraph.getVertexMap(), viewGraph.getEdgeMap() );
 
-		final JunctionOverlayGraphRenderer< OverlayVertexWrapper< Junction, MembranePart >, OverlayEdgeWrapper< Junction, MembranePart > > junctionOverlay =
+		final JunctionOverlayGraphRenderer< JunctionOverlayVertexWrapper< Junction, MembranePart >, JunctionOverlayEdgeWrapper< Junction, MembranePart > > junctionOverlay =
 				new JunctionOverlayGraphRenderer<>(
 				viewGraph,
 				highlightModel,
@@ -176,7 +174,7 @@ public class LeviathanViewBdv extends LeviathanView< OverlayGraphWrapper< Juncti
 		modelGraph.addVertexPositionListener( v -> viewer.getDisplay().repaint() );
 		selectionModel.listeners().add( () -> viewer.getDisplay().repaint() );
 
-		final OverlayNavigation< OverlayVertexWrapper< Junction, MembranePart >, OverlayEdgeWrapper< Junction, MembranePart > > overlayNavigation = new OverlayNavigation<>( viewer, viewGraph );
+		final JunctionOverlayNavigation< JunctionOverlayVertexWrapper< Junction, MembranePart >, JunctionOverlayEdgeWrapper< Junction, MembranePart > > overlayNavigation = new JunctionOverlayNavigation<>( viewer, viewGraph );
 		navigationHandler.listeners().add( overlayNavigation );
 
 		final BdvHighlightHandler< ?, ? > highlightHandler = new BdvHighlightHandler<>( viewGraph, junctionOverlay, highlightModel );
@@ -187,14 +185,12 @@ public class LeviathanViewBdv extends LeviathanView< OverlayGraphWrapper< Juncti
 //		contextProvider = new BdvContextProvider<>( windowTitle, viewGraph, junctionOverlay );
 //		viewer.renderTransformListeners().add( contextProvider );
 
-		final AutoNavigateFocusModel< OverlayVertexWrapper< Junction, MembranePart >, OverlayEdgeWrapper< Junction, MembranePart > > navigateFocusModel = new AutoNavigateFocusModel<>( focusModel, navigationHandler );
+		final AutoNavigateFocusModel< JunctionOverlayVertexWrapper< Junction, MembranePart >, JunctionOverlayEdgeWrapper< Junction, MembranePart > > navigateFocusModel = new AutoNavigateFocusModel<>( focusModel, navigationHandler );
 
 		HighlightBehaviours.install( viewBehaviours, viewGraph, viewGraph.getLock(), viewGraph, highlightModel, model );
 		FocusActions.install( viewActions, viewGraph, viewGraph.getLock(), navigateFocusModel, selectionModel );
 
 		BdvSelectionBehaviours.install( viewBehaviours, viewGraph, junctionOverlay, selectionModel, focusModel, navigationHandler );
-		EditBehaviours.install( viewBehaviours, viewGraph, junctionOverlay, selectionModel, focusModel, model );
-		EditJunctionBehaviours.install( viewBehaviours, frame.getViewerPanel(), viewGraph, junctionOverlay, model );
 
 		NavigationActions.install( viewActions, viewer, sharedBdvData.is2D() );
 		viewer.getTransformEventHandler().install( viewBehaviours );

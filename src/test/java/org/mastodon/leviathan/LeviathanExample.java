@@ -50,8 +50,8 @@ public class LeviathanExample
 		final KeyPressedManager keyPressedManager = new KeyPressedManager();
 		final FeatureColorModeManager featureColorModeManager = new FeatureColorModeManager();
 		final KeymapManager keymapManager = new KeymapManager();
-		final ViewerOptions options = ViewerOptions.options().shareKeyPressedEvents( keyPressedManager );
 		final Keymap keymap = keymapManager.getForwardDefaultKeymap();
+		final ViewerOptions options = ViewerOptions.options().shareKeyPressedEvents( keyPressedManager );
 		final LeviathanPlugins plugins = new LeviathanPlugins( keymap );
 		final Actions globalAppActions = new Actions( keymap.getConfig(), LeviathanKeyConfigContexts.LEVIATHAN );
 
