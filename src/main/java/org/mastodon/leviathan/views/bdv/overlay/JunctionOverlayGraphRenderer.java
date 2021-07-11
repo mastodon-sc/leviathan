@@ -291,6 +291,23 @@ public class JunctionOverlayGraphRenderer< V extends JunctionOverlayVertex< V, E
 		void apply( final E edge, final int x0, final int y0, final int x1, final int y1 );
 	}
 
+	private static double[] transformPixels( final double[] source, final AffineTransform3D transform )
+	{
+		final double[] target = new double[ source.length ];
+		final double[] pos = new double[ 3 ];
+		final double[] vPos = new double[ 3 ];
+		for ( int i = 0; i < source.length; i = i + 2 )
+		{
+			pos[ 0 ] = source[ i ];
+			pos[ 1 ] = source[ i + 1 ];
+			pos[ 2 ] = 0.;
+			transform.apply( pos, vPos );
+			target[ i ] = vPos[ 0 ];
+			target[ i + 1 ] = vPos[ 1 ];
+		}
+		return target;
+	}
+
 	private void forEachVisibleEdge(
 			final AffineTransform3D transform,
 			final int currentTimepoint,
@@ -386,7 +403,19 @@ public class JunctionOverlayGraphRenderer< V extends JunctionOverlayVertex< V, E
 					if ( isHighlighted )
 						graphics.setStroke( highlightedEdgeStroke );
 
-					graphics.drawLine( x0, y0, x1, y1 );
+					final double[] pixels = edge.getPixels();
+					final double[] vPixels = transformPixels( pixels, transform );
+					int xf = x0;
+					int yf = y0;
+					for ( int i = 0; i < pixels.length; i = i + 2 )
+					{
+						final int xt = ( int ) vPixels[ i ];
+						final int yt = ( int ) vPixels[ i + 1 ];
+						graphics.drawLine( xf, yf, xt, yt );
+						xf = xt;
+						yf = yt;
+					}
+					graphics.drawLine( xf, yf, x1, y1 );
 					if ( isHighlighted )
 						graphics.setStroke( defaultEdgeStroke );
 				} );
