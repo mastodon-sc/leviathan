@@ -1,4 +1,4 @@
-package org.mastodon.leviathan.mask;
+package org.mastodon.leviathan.algorithms;
 
 import java.util.ArrayList;
 import java.util.HashSet;

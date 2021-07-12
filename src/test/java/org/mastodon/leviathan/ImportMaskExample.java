@@ -1,8 +1,8 @@
 package org.mastodon.leviathan;
 
+import org.mastodon.leviathan.algorithms.MaskImporter;
 import org.mastodon.leviathan.app.LeviathanAppModel;
 import org.mastodon.leviathan.app.LeviathanKeyConfigContexts;
-import org.mastodon.leviathan.mask.MaskImporter;
 import org.mastodon.leviathan.model.JunctionModel;
 import org.mastodon.leviathan.plugin.LeviathanPlugins;
 import org.mastodon.leviathan.views.bdv.LeviathanViewBdv;
