@@ -28,27 +28,8 @@
  */
 package org.mastodon.leviathan.views.bdv.overlay;
 
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-
-import org.mastodon.graph.GraphChangeListener;
-import org.mastodon.graph.GraphChangeNotifier;
-import org.mastodon.spatial.SpatioTemporalIndex;
 import org.mastodon.views.bdv.overlay.OverlayGraph;
 
 public interface JunctionOverlayGraph< V extends JunctionOverlayVertex< V, E >, E extends JunctionOverlayEdge< E, V > >
-		extends OverlayGraph< V, E >, GraphChangeNotifier
-{
-	public SpatioTemporalIndex< V > getIndex();
-
-	public ReentrantReadWriteLock getLock();
-
-	/**
-	 * Triggers a {@link GraphChangeListener#graphChanged()} event.
-	 *
-	 * notifyGraphChanged() is not implicitly called in addVertex() etc because
-	 * we want to support batches of add/remove with one final
-	 * notifyGraphChanged() at the end.
-	 */
-	@Override
-	public void notifyGraphChanged();
-}
+		extends OverlayGraph< V, E >
+{}

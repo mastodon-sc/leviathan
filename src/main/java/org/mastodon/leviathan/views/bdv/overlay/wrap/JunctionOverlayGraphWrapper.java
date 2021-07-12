@@ -352,12 +352,4 @@ public class JunctionOverlayGraphWrapper< V extends Vertex< E >, E extends Edge<
 			return new JunctionOverlayEdgeIteratorWrapper<>( JunctionOverlayGraphWrapper.this, JunctionOverlayGraphWrapper.this.edgeRef(), wrappedGraph.edges().iterator() );
 		}
 	};
-
-	@Override
-	public double getMaxBoundingSphereRadiusSquared( final int timepoint )
-	{
-		// FIXME
-		return 0;
-	}
-
 }
