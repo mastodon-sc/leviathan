@@ -30,7 +30,6 @@ package org.mastodon.leviathan.views.bdv.overlay;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -49,6 +48,7 @@ import org.mastodon.util.GeometryUtil;
 import org.mastodon.views.bdv.overlay.OverlayContext;
 import org.mastodon.views.bdv.overlay.OverlayGraphRenderer;
 import org.mastodon.views.bdv.overlay.util.BdvRendererUtil;
+import org.scijava.util.IntArray;
 
 import net.imglib2.RealPoint;
 import net.imglib2.algorithm.kdtree.ConvexPolytope;
@@ -336,7 +336,6 @@ public class JunctionOverlayGraphRenderer< V extends JunctionOverlayVertex< V, E
 		final V ref2 = graph.vertexRef();
 		final E ref3 = graph.edgeRef();
 
-		final boolean useGradient = settings.getUseGradient();
 		final int colorSpot = settings.getColorSpot();
 
 		graph.getLock().readLock().lock();
@@ -347,67 +346,35 @@ public class JunctionOverlayGraphRenderer< V extends JunctionOverlayVertex< V, E
 			{
 				final E highlighted = highlight.getHighlightedEdge( ref3 );
 				graphics.setStroke( defaultEdgeStroke );
-				final double[] posSource = new double[ 3 ];
-				final double[] posTarget = new double[ 3 ];
-				final double[] vPosSource = new double[ 3 ];
-				final double[] vPosTarget = new double[ 3 ];
 
+				final IntArray arr = new IntArray();
+				final IntArray tmp = new IntArray();
 				forEachVisibleEdge( transform, currentTimepoint, ( edge, source, target ) -> {
-
-					source.localize( posSource );
-					transform.apply( posSource, vPosSource );
-					target.localize( posTarget );
-					transform.apply( posTarget, vPosTarget );
 
 					final boolean isHighlighted = edge.equals( highlighted );
 
 					final int edgeColor = coloring.color( edge, source, target );
-					final Color c1 = getColor(
+					graphics.setPaint( getColor(
 							selection.isSelected( edge ),
 							isHighlighted,
 							colorSpot,
-							edgeColor );
-					if ( useGradient )
-					{
-						final Color c0 = getColor(
-								selection.isSelected( edge ),
-								isHighlighted,
-								colorSpot,
-								edgeColor );
-						graphics.setPaint( new GradientPaint(
-								( float ) vPosSource[ 0 ], ( float ) vPosSource[ 1 ], c0,
-								( float ) vPosTarget[ 0 ], ( float ) vPosTarget[ 1 ], c1 ) );
-					}
-					else
-					{
-						graphics.setPaint( c1 );
-					}
+							edgeColor ) );
+
+					edgeLines( edge, source, target, transform, arr, tmp );
+					int xf = arr.getValue( 0 );
+					int yf = arr.getValue( 1 );
+
 					if ( isHighlighted )
 						graphics.setStroke( highlightedEdgeStroke );
-
-
-					final double[] increments = edge.getPixels();
-					for ( int i = 0; i < increments.length; i = i + 2 )
+					for ( int i = 2; i < arr.size(); i = i + 2 )
 					{
-						final double incx = increments[ i ];
-						final double incy = increments[ i + 1 ];
-						posTarget[ 0 ] = posSource[ 0 ] + incx;
-						posTarget[ 1 ] = posSource[ 1 ] + incy;
-						transform.apply( posTarget, vPosTarget );
-
-						graphics.drawLine(
-								( int ) vPosSource[ 0 ], ( int ) vPosSource[ 1 ],
-								( int ) vPosTarget[ 0 ], ( int ) vPosTarget[ 1 ] );
-						graphics.drawRect(
-								( int ) vPosTarget[ 0 ] - 1,
-								( int ) vPosTarget[ 1 ] - 1, 3, 3 ); // DEBUG
-
-						posSource[ 0 ] = posTarget[ 0 ];
-						posSource[ 1 ] = posTarget[ 1 ];
-						vPosSource[ 0 ] = vPosTarget[ 0 ];
-						vPosSource[ 1 ] = vPosTarget[ 1 ];
+						final int xt = arr.getValue( i );
+						final int yt = arr.getValue( i + 1 );
+						graphics.drawLine( xf, yf, xt, yt );
+//						graphics.drawRect( xt - 1, yt - 1, 3, 3 );
+						xf = xt;
+						yf = yt;
 					}
-
 					if ( isHighlighted )
 						graphics.setStroke( defaultEdgeStroke );
 				} );
@@ -466,6 +433,45 @@ public class JunctionOverlayGraphRenderer< V extends JunctionOverlayVertex< V, E
 		graph.releaseRef( ref3 );
 	}
 
+	private final static < V extends JunctionOverlayVertex< V, E >, E extends JunctionOverlayEdge< E, V > > void edgeLines(
+			final E edge,
+			final V source,
+			final V target,
+			final AffineTransform3D transform,
+			final IntArray arr,
+			final IntArray tmp )
+	{
+		tmp.clear();
+		arr.clear();
+		final double[] posSource = new double[ 3 ];
+		final double[] posTarget = new double[ 3 ];
+		final double[] vPosSource = new double[ 3 ];
+		final double[] vPosTarget = new double[ 3 ];
+
+		source.localize( posSource );
+		transform.apply( posSource, vPosSource );
+
+		final double[] increments = edge.getPixels();
+		for ( int i = 0; i < increments.length; i = i + 2 )
+		{
+			final double incx = increments[ i ];
+			final double incy = increments[ i + 1 ];
+			posTarget[ 0 ] = posSource[ 0 ] + incx;
+			posTarget[ 1 ] = posSource[ 1 ] + incy;
+			transform.apply( posTarget, vPosTarget );
+
+			tmp.addValue( ( int ) vPosTarget[ 0 ] );
+			tmp.addValue( ( int ) vPosTarget[ 1 ] );
+
+			posSource[ 0 ] = posTarget[ 0 ];
+			posSource[ 1 ] = posTarget[ 1 ];
+			vPosSource[ 0 ] = vPosTarget[ 0 ];
+			vPosSource[ 1 ] = vPosTarget[ 1 ];
+		}
+
+		DouglasPeucker.douglasPeucker( tmp, arr, 1. );
+	}
+
 	/**
 	 * Returns the edge currently painted close to the specified location.
 	 * <p>
@@ -509,6 +515,8 @@ public class JunctionOverlayGraphRenderer< V extends JunctionOverlayVertex< V, E
 
 		final AffineTransform3D transform = getRenderTransformCopy();
 		final int currentTimepoint = renderTimepoint;
+		final IntArray arr = new IntArray();
+		final IntArray tmp = new IntArray();
 
 		class Op implements EdgeOperation< E, V >
 		{
@@ -518,32 +526,18 @@ public class JunctionOverlayGraphRenderer< V extends JunctionOverlayVertex< V, E
 
 			boolean found = false;
 
-			private final double[] posSource = new double[ 3 ];
-
-			private final double[] vPosSource = new double[ 3 ];
-
-			private final double[] posTarget = new double[ 3 ];
-
-			private final double[] vPosTarget = new double[ 3 ];
-
 			@Override
 			public void apply( final E edge, final V source, final V target )
 			{
-				source.localize( posSource );
-				transform.apply( posSource, vPosSource );
+				edgeLines( edge, source, target, transform, arr, tmp );
+				int xf = arr.getValue( 0 );
+				int yf = arr.getValue( 1 );
 
-				final double[] increments = edge.getPixels();
-				for ( int i = 0; i < increments.length; i = i + 2 )
+				for ( int i = 2; i < arr.size(); i = i + 2 )
 				{
-					final double incx = increments[ i ];
-					final double incy = increments[ i + 1 ];
-					posTarget[ 0 ] = posSource[ 0 ] + incx;
-					posTarget[ 1 ] = posSource[ 1 ] + incy;
-					transform.apply( posTarget, vPosTarget );
-
-					final double squDist = GeometryUtil.squSegmentDist( x, y,
-							vPosSource[ 0 ], vPosSource[ 1 ],
-							vPosTarget[ 0 ], vPosTarget[ 1 ] );
+					final int xt = arr.getValue( i );
+					final int yt = arr.getValue( i + 1 );
+					final double squDist = GeometryUtil.squSegmentDist( x, y, xf, yf, xt, yt );
 					if ( squDist <= squTolerance && squDist < bestSquDist )
 					{
 						found = true;
@@ -551,11 +545,8 @@ public class JunctionOverlayGraphRenderer< V extends JunctionOverlayVertex< V, E
 						ref.refTo( edge );
 						break;
 					}
-
-					posSource[ 0 ] = posTarget[ 0 ];
-					posSource[ 1 ] = posTarget[ 1 ];
-					vPosSource[ 0 ] = vPosTarget[ 0 ];
-					vPosSource[ 1 ] = vPosTarget[ 1 ];
+					xf = xt;
+					yf = yt;
 				}
 			}
 		};
