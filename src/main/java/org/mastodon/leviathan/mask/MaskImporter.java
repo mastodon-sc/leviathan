@@ -116,6 +116,11 @@ public class MaskImporter< T extends RealType< T > >
 		final RandomAccess< UnsignedIntType > raLblImg = junctionLabelImg.getIndexImg().randomAccess();
 
 		final DoubleArray arr = new DoubleArray();
+		// Store position of the source.
+		storePosition( arr, Point.wrap( new long[] {
+				( long ) source.getDoublePosition( 0 ),
+				( long ) source.getDoublePosition( 1 ) } ) );
+
 		WALK: while ( true )
 		{
 			// Mark current position as visited.
@@ -123,8 +128,7 @@ public class MaskImporter< T extends RealType< T > >
 			raLblImg.get().set( sourceLbl );
 
 			// Store current position and length.
-			arr.addValue( raLblImg.getDoublePosition( 0 ) );
-			arr.addValue( raLblImg.getDoublePosition( 1 ) );
+			storePosition( arr, raLblImg );
 
 			// Look for the next position.
 			final Cursor< T > nCursor = raNMask.get().localizingCursor();
@@ -147,19 +151,89 @@ public class MaskImporter< T extends RealType< T > >
 					continue WALK;
 				}
 
-				// Only remaining possibility is that we have found another junction.
-				arr.addValue( nCursor.getDoublePosition( 0 ) );
-				arr.addValue( nCursor.getDoublePosition( 1 ) );
+				// Only remaining possibility is that we have found another
+				// junction.
+				storePosition( arr, nCursor );
 				final Junction ref = graph.vertexRef();
-				final Junction target = lblToJunction( lbl, ref );
 				final MembranePart eref = graph.edgeRef();
+				final Junction target = lblToJunction( lbl, ref );
+
+				// Store position of the target.
+				storePosition( arr, Point.wrap( new long[] {
+						( long ) target.getDoublePosition( 0 ),
+						( long ) target.getDoublePosition( 1 ) } ) );
+				final double[] pos = arr.copyArray();
+				// Convert to relative pos.
+				toRelative( pos, source );
+
 				final MembranePart edge = graph.addEdge( source, target, eref ).init();
-				edge.setPixels( arr.copyArray() );
+				edge.setPixels( pos );
 				graph.releaseRef( ref );
+				graph.releaseRef( eref );
 				return;
 			}
 			// Did not found a next pixel to iterate to. Finished for this stem.
 			return;
+		}
+	}
+
+	private void toRelative( final double[] pos, final RealLocalizable start )
+	{
+		if ( pos.length < 2 )
+			return;
+
+		double x0 = start.getDoublePosition( 0 );
+		double y0 = start.getDoublePosition( 1 );
+		for ( int i = 0; i < pos.length; i = i + 2 )
+		{
+			final double x1 = pos[ i ];
+			final double y1 = pos[ i + 1 ];
+			pos[ i ] -= x0;
+			pos[ i + 1 ] -= y0;
+			x0 = x1;
+			y0 = y1;
+		}
+	}
+
+	private static final void storePosition( final DoubleArray storage, final Localizable pos )
+	{
+		final double x2 = pos.getDoublePosition( 0 );
+		final double y2 = pos.getDoublePosition( 1 );
+		final int size = storage.size();
+		if ( size == 0 )
+		{
+			storage.addValue( x2 );
+			storage.addValue( y2 );
+			return;
+		}
+
+		final double y1 = storage.getValue( size - 1 );
+		final double x1 = storage.getValue( size - 2 );
+		// Don't store position is identical to previous one.
+		if ( x1 == x2 && y1 == y2 )
+			return;
+
+		if ( size < 4 )
+		{
+			storage.addValue( x2 );
+			storage.addValue( y2 );
+			return;
+		}
+
+		// Check whether the new position is aligned with the previous ones.
+		final double y0 = storage.getValue( size - 3 );
+		final double x0 = storage.getValue( size - 4 );
+		final double slopeDiff = ( x2 - x1 ) * ( y0 - y1 ) - ( y2 - y1 ) * ( x0 - x1 );
+		if ( slopeDiff == 0. )
+		{
+			// Collinear, we replace the middle point instead of adding
+			storage.setValue( size - 1, y2 );
+			storage.setValue( size - 2, x2 );
+		}
+		else
+		{
+			storage.addValue( x2 );
+			storage.addValue( y2 );
 		}
 	}
 
@@ -204,7 +278,7 @@ public class MaskImporter< T extends RealType< T > >
 		}
 
 		// Connected components.
-		final Img<UnsignedIntType> junctionLbl = ArrayImgs.unsignedInts( mask.dimensionsAsLongArray() );
+		final Img< UnsignedIntType > junctionLbl = ArrayImgs.unsignedInts( mask.dimensionsAsLongArray() );
 //		this.junctionLbl = ArrayImgs.unsignedInts( mask.dimensionsAsLongArray() );
 		final StructuringElement se = StructuringElement.FOUR_CONNECTED;;
 		ConnectedComponents.labelAllConnectedComponents( Views.extendZero( junctionMaskImg ), junctionLbl, se );
