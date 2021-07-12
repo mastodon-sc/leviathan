@@ -50,6 +50,7 @@ import org.mastodon.views.bdv.overlay.OverlayGraphRenderer;
 import org.mastodon.views.bdv.overlay.util.BdvRendererUtil;
 import org.scijava.util.IntArray;
 
+import bdv.util.Affine3DHelpers;
 import net.imglib2.RealPoint;
 import net.imglib2.algorithm.kdtree.ConvexPolytope;
 import net.imglib2.neighborsearch.NearestNeighborSearch;
@@ -126,7 +127,7 @@ public class JunctionOverlayGraphRenderer< V extends JunctionOverlayVertex< V, E
 		this.settings = settings;
 	}
 
-	public static final double pointRadius = 2.5;
+	public static final double pointRadius = 0.4;
 
 	private static int trunc255( final int i )
 	{
@@ -394,6 +395,8 @@ public class JunctionOverlayGraphRenderer< V extends JunctionOverlayVertex< V, E
 				final double[] pos = new double[ 3 ];
 				final double[] vPos = new double[ 3 ];
 
+				final double scale = Affine3DHelpers.extractScale( transform, 0 );
+
 				for ( final V vertex : ccp.getInsideValues() )
 				{
 					final int color = coloring.color( vertex );
@@ -410,9 +413,15 @@ public class JunctionOverlayGraphRenderer< V extends JunctionOverlayVertex< V, E
 							isHighlighted,
 							colorSpot,
 							color ) );
-					double radius = pointRadius;
+					double radius = pointRadius * scale;
 					if ( isHighlighted || isFocused )
-						radius *= 3;
+					{
+						radius *= 1.5;
+						radius = Math.max( radius, 1.5 );
+					}
+
+					if ( radius < 1. )
+						continue;
 					final int ox = ( int ) ( x - radius );
 					final int oy = ( int ) ( y - radius );
 					final int ow = ( int ) ( 2 * radius );
