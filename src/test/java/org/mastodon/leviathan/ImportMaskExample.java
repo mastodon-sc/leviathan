@@ -1,11 +1,19 @@
 package org.mastodon.leviathan;
 
+import org.mastodon.collection.RefCollections;
+import org.mastodon.collection.RefList;
+import org.mastodon.collection.RefSet;
+import org.mastodon.leviathan.algorithms.JunctionGraphUtils;
 import org.mastodon.leviathan.algorithms.MaskImporter;
 import org.mastodon.leviathan.app.LeviathanAppModel;
 import org.mastodon.leviathan.app.LeviathanKeyConfigContexts;
+import org.mastodon.leviathan.model.Junction;
+import org.mastodon.leviathan.model.JunctionGraph;
 import org.mastodon.leviathan.model.JunctionModel;
+import org.mastodon.leviathan.model.MembranePart;
 import org.mastodon.leviathan.plugin.LeviathanPlugins;
 import org.mastodon.leviathan.views.bdv.LeviathanViewBdv;
+import org.mastodon.model.SelectionModel;
 import org.mastodon.ui.coloring.feature.FeatureColorModeManager;
 import org.mastodon.ui.keymap.Keymap;
 import org.mastodon.ui.keymap.KeymapManager;
@@ -61,6 +69,51 @@ public class ImportMaskExample
 						keymapManager,
 						plugins,
 						globalAppActions );
+
+		final SelectionModel< Junction, MembranePart > selectionModel = appModel.getSelectionModel();
+		selectionModel.listeners().add( () -> {
+			final RefSet< MembranePart > edges = appModel.getSelectionModel().getSelectedEdges();
+			if ( edges.size() != 1 )
+				return;
+
+			final JunctionGraph graph = model.getGraph();
+			final MembranePart eref1 = graph.edgeRef();
+			final MembranePart eref2 = graph.edgeRef();
+			final Junction vref1 = graph.vertexRef();
+			final Junction vref2 = graph.vertexRef();
+
+			final MembranePart start = edges.iterator().next();
+			final Junction other = start.getSource( vref1 );
+			final MembranePart next = JunctionGraphUtils.nextCounterClockWiseEdge( graph, start, other, eref1 );
+			selectionModel.setSelected( other, true );
+			selectionModel.setSelected( next, true );
+
+			final RefList< MembranePart > face = RefCollections.createRefList( graph.edges() );
+			face.add( start );
+			selectionModel.pauseListeners();
+			while ( !next.equals( start ) )
+			{
+				face.add( next );
+				JunctionGraphUtils.junctionAcross( next, other, vref2 );
+				JunctionGraphUtils.nextCounterClockWiseEdge( graph, next, vref2, eref2 );
+				selectionModel.setSelected( eref2, true );
+				selectionModel.setSelected( vref2, true );
+				other.refTo( vref2 );
+				next.refTo( eref2 );
+			}
+			selectionModel.resumeListeners();
+
+			final StringBuilder str = new StringBuilder( "Selected face made of " );
+			str.append( face.get( 0 ).getInternalPoolIndex() );
+			for ( int i = 1; i < face.size(); i++ )
+				str.append( ", " + face.get( i ).getInternalPoolIndex() );
+			System.out.println( str );
+
+			graph.releaseRef( eref1 );
+			graph.releaseRef( eref2 );
+			graph.releaseRef( vref1 );
+			graph.releaseRef( vref2 );
+		} );
 
 		new LeviathanViewBdv( appModel );
 	}
