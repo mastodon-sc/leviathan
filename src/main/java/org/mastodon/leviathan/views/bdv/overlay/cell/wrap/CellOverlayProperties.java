@@ -40,7 +40,7 @@ public interface CellOverlayProperties< V, E >
 
 	public int getTimepoint( V v );
 
-	public void setMembranes( V v, int[] ids );
+	public double[] getBoundary( V v );
 
 	public int[] getMembranes( V v );
 

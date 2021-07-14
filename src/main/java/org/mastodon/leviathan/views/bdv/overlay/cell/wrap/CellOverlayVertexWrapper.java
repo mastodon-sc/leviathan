@@ -41,7 +41,7 @@ import net.imglib2.RealLocalizable;
 public class CellOverlayVertexWrapper< V extends Vertex< E >, E extends Edge< V > >
 		implements CellOverlayVertex< CellOverlayVertexWrapper< V, E >, CellOverlayEdgeWrapper< V, E > >
 {
-	private final int n = 3;
+	private final int n = 2;
 
 	private final CellOverlayGraphWrapper< V, E > wrapper;
 
@@ -383,14 +383,14 @@ public class CellOverlayVertexWrapper< V extends Vertex< E >, E extends Edge< V 
 	}
 
 	@Override
-	public void setMembranes( final int[] ids )
-	{
-		overlayProperties.setMembranes( wv, ids );
-	}
-
-	@Override
 	public int[] getMembranes()
 	{
 		return overlayProperties.getMembranes( wv );
+	}
+
+	@Override
+	public double[] getBoundary()
+	{
+		return overlayProperties.getBoundary( wv );
 	}
 }

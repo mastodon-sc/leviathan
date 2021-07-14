@@ -41,8 +41,8 @@ public interface CellOverlayVertex< O extends CellOverlayVertex< O, E >, E exten
 
 	public O init( final int timepoint, final double[] position );
 
-	public void setMembranes( int[] ids );
-
 	public int[] getMembranes();
+
+	public double[] getBoundary();
 
 }

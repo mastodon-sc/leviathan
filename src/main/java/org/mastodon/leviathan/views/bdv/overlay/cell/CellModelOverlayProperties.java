@@ -121,14 +121,14 @@ public class CellModelOverlayProperties implements CellOverlayProperties< Cell, 
 	}
 
 	@Override
-	public void setMembranes( final Cell v, final int[] ids )
-	{
-		v.setMembranes( ids );
-	}
-
-	@Override
 	public int[] getMembranes( final Cell v )
 	{
 		return v.getMembranes();
+	}
+
+	@Override
+	public double[] getBoundary( final Cell v )
+	{
+		return v.getBoundary();
 	}
 }

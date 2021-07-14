@@ -93,8 +93,6 @@ public class CellOverlayGraphRenderer< V extends CellOverlayVertex< V, E >, E ex
 
 	private final Visibilities< V, E > visibilities;
 
-	private final MembraneConcatenator mbcat;
-
 	public CellOverlayGraphRenderer(
 			final CellOverlayGraph< V, E > graph,
 			final JunctionOverlayGraphWrapper< Junction, MembranePart > junctionGraphWrapper,
@@ -112,7 +110,6 @@ public class CellOverlayGraphRenderer< V extends CellOverlayVertex< V, E >, E ex
 		index = graph.getIndex();
 		renderTransform = new AffineTransform3D();
 		setRenderSettings( CellRenderSettings.defaultStyle() );
-		this.mbcat = new MembraneConcatenator( junctionGraphWrapper );
 	}
 
 	@Override
@@ -141,8 +138,6 @@ public class CellOverlayGraphRenderer< V extends CellOverlayVertex< V, E >, E ex
 	{
 		this.settings = settings;
 	}
-
-	public static final double pointRadius = 4.;
 
 	private static int trunc255( final int i )
 	{
@@ -507,6 +502,8 @@ public class CellOverlayGraphRenderer< V extends CellOverlayVertex< V, E >, E ex
 				final Path2D.Double path = new Path2D.Double();
 				final DoubleArray arr = new DoubleArray();
 				final DoubleArray tmp = new DoubleArray();
+				final double[] pos = new double[ 3 ];
+				final double[] vPos = new double[ 3 ];
 
 				for ( final V vertex : ccp.getInsideValues() )
 				{
@@ -524,8 +521,13 @@ public class CellOverlayGraphRenderer< V extends CellOverlayVertex< V, E >, E ex
 							colorFuture,
 							color ) );
 
-					final int[] ids = vertex.getMembranes();
-					toPath( ids, transform, path, arr, tmp );
+					toPath( vertex,
+							transform,
+							path,
+							arr,
+							tmp,
+							pos,
+							vPos );
 
 					if ( isFocused )
 						graphics.fill( path );
@@ -550,20 +552,39 @@ public class CellOverlayGraphRenderer< V extends CellOverlayVertex< V, E >, E ex
 		graph.releaseRef( ref3 );
 	}
 
-	private void toPath( final int[] ids, final AffineTransform3D transform, final java.awt.geom.Path2D.Double path, final DoubleArray arr, final DoubleArray tmp )
+	private void toPath(
+			final V vertex,
+			final AffineTransform3D transform,
+			final java.awt.geom.Path2D.Double path,
+			final DoubleArray arr,
+			final DoubleArray tmp,
+			final double[] pos,
+			final double[] vPos )
 	{
-		mbcat.init( tmp, transform );
-		for ( final int id : ids )
-			mbcat.cat( id );
-
 		arr.clear();
+		tmp.clear();
+		final double[] boundary = vertex.getBoundary();
+		final double xc = vertex.getDoublePosition( 0 );
+		final double yc = vertex.getDoublePosition( 1 );
+
+		for ( int i = 0; i < boundary.length; i = i + 2 )
+		{
+			pos[ 0 ] = xc + boundary[ i ];
+			pos[ 1 ] = yc + boundary[ i + 1 ];
+			transform.apply( pos, vPos );
+			tmp.addValue( vPos[ 0 ] );
+			tmp.addValue( vPos[ 1 ] );
+		}
 		DouglasPeucker.douglasPeucker( tmp, arr, 1. );
 
 		path.reset();
 		path.moveTo( arr.getValue( 0 ), arr.getValue( 1 ) );
 		for ( int i = 2; i < arr.size(); i = i + 2 )
-			path.lineTo( arr.getValue( i ), arr.getValue( i + 1 ) );
-
+		{
+			final double x = arr.getValue( i );
+			final double y = arr.getValue( i + 1 );
+			path.lineTo( x, y );
+		}
 		path.closePath();
 	}
 
@@ -749,7 +770,7 @@ public class CellOverlayGraphRenderer< V extends CellOverlayVertex< V, E >, E ex
 			final Path2D.Double path = new Path2D.Double();
 			final DoubleArray arr = new DoubleArray();
 			final DoubleArray tmp = new DoubleArray();
-			toPath( vertex.getMembranes(), transform, path, arr, tmp );
+			toPath( vertex, transform, path, arr, tmp, lPos, gPos );
 			if ( path.contains( x, y ) )
 			{
 				found = true;
