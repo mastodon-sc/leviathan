@@ -29,19 +29,19 @@
 package org.mastodon.leviathan.plugin;
 
 import org.mastodon.app.plugin.MastodonAppPluginModel;
-import org.mastodon.leviathan.app.LeviathanAppModel;
+import org.mastodon.leviathan.app.LeviathanJunctionAppModel;
 
 public class LeviathanPluginAppModel  implements MastodonAppPluginModel
 {
 
-	private final LeviathanAppModel appModel;
+	private final LeviathanJunctionAppModel appModel;
 
-	public LeviathanPluginAppModel( final LeviathanAppModel appModel )
+	public LeviathanPluginAppModel( final LeviathanJunctionAppModel appModel )
 	{
 		this.appModel = appModel;
 	}
 
-	public LeviathanAppModel getAppModel()
+	public LeviathanJunctionAppModel getAppModel()
 	{
 		return appModel;
 	}

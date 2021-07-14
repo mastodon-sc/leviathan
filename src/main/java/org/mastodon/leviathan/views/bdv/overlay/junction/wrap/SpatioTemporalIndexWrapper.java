@@ -26,51 +26,58 @@
  * POSSIBILITY OF SUCH DAMAGE.
  * #L%
  */
-package org.mastodon.leviathan.views.bdv.overlay.wrap;
+package org.mastodon.leviathan.views.bdv.overlay.junction.wrap;
 
-import org.mastodon.adapter.RefBimap;
-import org.mastodon.collection.RefCollection;
+import java.util.Iterator;
+import java.util.concurrent.locks.Lock;
+
 import org.mastodon.graph.Edge;
 import org.mastodon.graph.Vertex;
+import org.mastodon.spatial.SpatialIndex;
+import org.mastodon.spatial.SpatioTemporalIndex;
 
-public class JunctionOverlayEdgeWrapperBimap< V extends Vertex< E >, E extends Edge< V > >
-	implements RefBimap< E, JunctionOverlayEdgeWrapper< V, E > >
+public class SpatioTemporalIndexWrapper< V extends Vertex< E >, E extends Edge< V > >
+		implements SpatioTemporalIndex< JunctionOverlayVertexWrapper< V, E > >
 {
-	private final RefCollection< JunctionOverlayEdgeWrapper< V, E > > edges;
+	private final JunctionOverlayGraphWrapper< V, E > graphWrapper;
 
-	public JunctionOverlayEdgeWrapperBimap( final JunctionOverlayGraphWrapper< V, E > graph )
+	private final SpatioTemporalIndex< V > wrappedIndex;
+
+	public SpatioTemporalIndexWrapper( final JunctionOverlayGraphWrapper< V, E > graphWrapper, final SpatioTemporalIndex< V > index )
 	{
-		this.edges = graph.edges();
+		this.graphWrapper = graphWrapper;
+		this.wrappedIndex = index;
 	}
 
 	@Override
-	public E getLeft( final JunctionOverlayEdgeWrapper< V, E > right )
+	public Iterator< JunctionOverlayVertexWrapper< V, E > > iterator()
 	{
-		return right.we;
+		return new OverlayVertexIteratorWrapper< >( graphWrapper, graphWrapper.vertexRef(), wrappedIndex.iterator() );
 	}
 
 	@Override
-	public JunctionOverlayEdgeWrapper< V, E > getRight( final E left, final JunctionOverlayEdgeWrapper< V, E > ref )
+	public Lock readLock()
 	{
-		ref.we = left;
-		return ref.orNull();
+		return wrappedIndex.readLock();
 	}
 
 	@Override
-	public E reusableLeftRef( final JunctionOverlayEdgeWrapper< V, E > right )
+	public SpatialIndex< JunctionOverlayVertexWrapper< V, E > > getSpatialIndex( final int timepoint )
 	{
-		return right.ref;
+		final SpatialIndex< V > index = wrappedIndex.getSpatialIndex( timepoint );
+		if ( index == null )
+			return null;
+		else
+			return new SpatialIndexWrapper< >( graphWrapper, index );
 	}
 
 	@Override
-	public JunctionOverlayEdgeWrapper< V, E > reusableRightRef()
+	public SpatialIndex< JunctionOverlayVertexWrapper< V, E > > getSpatialIndex( final int fromTimepoint, final int toTimepoint )
 	{
-		return edges.createRef();
-	}
-
-	@Override
-	public void releaseRef( final JunctionOverlayEdgeWrapper< V, E > ref )
-	{
-		edges.releaseRef( ref );
+		final SpatialIndex< V > index = wrappedIndex.getSpatialIndex( fromTimepoint, toTimepoint );
+		if ( index == null )
+			return null;
+		else
+			return new SpatialIndexWrapper< >( graphWrapper, index );
 	}
 }

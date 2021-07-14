@@ -26,7 +26,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  * #L%
  */
-package org.mastodon.leviathan.views.bdv.overlay.wrap;
+package org.mastodon.leviathan.views.bdv.overlay.junction.wrap;
 
 import java.util.Iterator;
 
@@ -34,8 +34,8 @@ import org.mastodon.graph.Edge;
 import org.mastodon.graph.GraphIdBimap;
 import org.mastodon.graph.Vertex;
 
-public class OverlayVertexIteratorWrapper< V extends Vertex< E >, E extends Edge< V > >
-		implements Iterator< JunctionOverlayVertexWrapper< V, E > >
+public class JunctionOverlayVertexIteratorWrapper< V extends Vertex< E >, E extends Edge< V > >
+	implements Iterator< JunctionOverlayVertexWrapper< V, E > >
 {
 	private final JunctionOverlayVertexWrapper< V, E > vertex;
 
@@ -43,7 +43,7 @@ public class OverlayVertexIteratorWrapper< V extends Vertex< E >, E extends Edge
 
 	private final GraphIdBimap< V, E > idmap;
 
-	public OverlayVertexIteratorWrapper(
+	public JunctionOverlayVertexIteratorWrapper(
 			final JunctionOverlayGraphWrapper< V, E > graph,
 			final JunctionOverlayVertexWrapper< V, E > vertex,
 			final Iterator< V > wrappedIterator )

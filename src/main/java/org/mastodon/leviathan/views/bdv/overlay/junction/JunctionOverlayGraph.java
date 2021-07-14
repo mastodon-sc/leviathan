@@ -26,17 +26,10 @@
  * POSSIBILITY OF SUCH DAMAGE.
  * #L%
  */
-package org.mastodon.leviathan.views.bdv.overlay;
+package org.mastodon.leviathan.views.bdv.overlay.junction;
 
-import org.mastodon.Ref;
-import org.mastodon.views.bdv.overlay.OverlayEdge;
+import org.mastodon.views.bdv.overlay.OverlayGraph;
 
-public interface JunctionOverlayEdge< O extends JunctionOverlayEdge< O, V >, V extends JunctionOverlayVertex< V, ? > >
-		extends OverlayEdge< O, V >, Ref< O >
-{
-	public O init();
-
-	public void setPixels( double[] pixels );
-
-	public double[] getPixels();
-}
+public interface JunctionOverlayGraph< V extends JunctionOverlayVertex< V, E >, E extends JunctionOverlayEdge< E, V > >
+		extends OverlayGraph< V, E >
+{}

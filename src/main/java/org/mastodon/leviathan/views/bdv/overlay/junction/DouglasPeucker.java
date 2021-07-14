@@ -1,6 +1,6 @@
-package org.mastodon.leviathan.views.bdv.overlay;
+package org.mastodon.leviathan.views.bdv.overlay.junction;
 
-import org.scijava.util.IntArray;
+import org.scijava.util.DoubleArray;
 
 public class DouglasPeucker
 {
@@ -33,28 +33,28 @@ public class DouglasPeucker
 		return Math.sqrt( distanceToSegmentSquared( px, py, vx, vy, wx, wy ) );
 	}
 
-	private static final int getX( final IntArray arr, final int i )
+	private static final double getX( final DoubleArray arr, final int i )
 	{
 		return arr.getValue( 2 * i );
 	}
 
-	private static final int getY( final IntArray arr, final int i )
+	private static final double getY( final DoubleArray arr, final int i )
 	{
 		return arr.getValue( 2 * i + 1 );
 	}
 
-	private static final void add( final IntArray from, final int index, final IntArray to )
+	private static final void add( final DoubleArray from, final int index, final DoubleArray to )
 	{
 		to.addValue( getX( from, index ) );
 		to.addValue( getY( from, index ) );
 	}
 
-	private static int size( final IntArray list )
+	private static int size( final DoubleArray list )
 	{
 		return list.size() / 2;
 	}
 
-	private static final void douglasPeucker( final IntArray list, final int s, final int e, final double epsilon, final IntArray resultList )
+	private static final void douglasPeucker( final DoubleArray input, final int s, final int e, final double epsilon, final DoubleArray output )
 	{
 		// Find the point with the maximum distance
 		double dmax = 0;
@@ -65,14 +65,14 @@ public class DouglasPeucker
 		for ( int i = start + 1; i < end; i++ )
 		{
 			// Point
-			final double px = getX( list, i );
-			final double py = getY( list, i );
+			final double px = getX( input, i );
+			final double py = getY( input, i );
 			// Start
-			final double vx = getX( list, start );
-			final double vy = getY( list, start );
+			final double vx = getX( input, start );
+			final double vy = getY( input, start );
 			// End
-			final double wx = getX( list, end );
-			final double wy = getY( list, end );
+			final double wx = getX( input, end );
+			final double wy = getY( input, end );
 			final double d = perpendicularDistance( px, py, vx, vy, wx, wy );
 			if ( d > dmax )
 			{
@@ -84,25 +84,25 @@ public class DouglasPeucker
 		if ( dmax > epsilon )
 		{
 			// Recursive call
-			douglasPeucker( list, s, index, epsilon, resultList );
-			douglasPeucker( list, index, e, epsilon, resultList );
+			douglasPeucker( input, s, index, epsilon, output );
+			douglasPeucker( input, index, e, epsilon, output );
 		}
 		else
 		{
 			if ( ( end - start ) > 0 )
 			{
-				add( list, start, resultList );
-				add( list, end, resultList );
+				add( input, start, output );
+				add( input, end, output );
 			}
 			else
 			{
-				add( list, start, resultList );
+				add( input, start, output );
 			}
 		}
 	}
 
-	public static final void douglasPeucker( final IntArray list, final IntArray resultList, final double epsilon )
+	public static final void douglasPeucker( final DoubleArray input, final DoubleArray output, final double epsilon )
 	{
-		douglasPeucker( list, 0, size( list ), epsilon, resultList );
+		douglasPeucker( input, 0, size( input ), epsilon, output );
 	}
 }

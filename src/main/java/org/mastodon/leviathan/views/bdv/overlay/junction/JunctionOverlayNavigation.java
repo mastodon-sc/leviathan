@@ -26,7 +26,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  * #L%
  */
-package org.mastodon.leviathan.views.bdv.overlay;
+package org.mastodon.leviathan.views.bdv.overlay.junction;
 
 import org.mastodon.model.NavigationListener;
 import org.mastodon.ui.NavigationEtiquette;

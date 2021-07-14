@@ -39,7 +39,7 @@ import org.mastodon.app.ui.ViewMenuBuilder.JMenuHandle;
 import org.mastodon.feature.FeatureModel;
 import org.mastodon.graph.Edge;
 import org.mastodon.graph.Vertex;
-import org.mastodon.leviathan.app.LeviathanAppModel;
+import org.mastodon.leviathan.app.LeviathanJunctionAppModel;
 import org.mastodon.leviathan.model.Junction;
 import org.mastodon.leviathan.model.JunctionModel;
 import org.mastodon.leviathan.model.MembranePart;
@@ -54,10 +54,10 @@ import org.mastodon.ui.coloring.feature.FeatureColorModeManager;
 import org.mastodon.views.trackscheme.display.ColorBarOverlay;
 import org.mastodon.views.trackscheme.display.ColorBarOverlay.Position;
 
-public class LeviathanView< VG extends ViewGraph< Junction, MembranePart, V, E >, V extends Vertex< E >, E extends Edge< V > >
-		extends MastodonFrameView< LeviathanAppModel, VG, Junction, MembranePart, V, E >
+public class LeviathanJunctionView< VG extends ViewGraph< Junction, MembranePart, V, E >, V extends Vertex< E >, E extends Edge< V > >
+		extends MastodonFrameView< LeviathanJunctionAppModel, VG, Junction, MembranePart, V, E >
 {
-	public LeviathanView( final LeviathanAppModel appModel, final VG viewGraph, final String[] keyConfigContexts )
+	public LeviathanJunctionView( final LeviathanJunctionAppModel appModel, final VG viewGraph, final String[] keyConfigContexts )
 	{
 		super( appModel, viewGraph, keyConfigContexts );
 	}

@@ -26,10 +26,51 @@
  * POSSIBILITY OF SUCH DAMAGE.
  * #L%
  */
-package org.mastodon.leviathan.views.bdv.overlay;
+package org.mastodon.leviathan.views.bdv.overlay.junction.wrap;
 
-import org.mastodon.views.bdv.overlay.OverlayGraph;
+import org.mastodon.adapter.RefBimap;
+import org.mastodon.collection.RefCollection;
+import org.mastodon.graph.Edge;
+import org.mastodon.graph.Vertex;
 
-public interface JunctionOverlayGraph< V extends JunctionOverlayVertex< V, E >, E extends JunctionOverlayEdge< E, V > >
-		extends OverlayGraph< V, E >
-{}
+public class JunctionOverlayEdgeWrapperBimap< V extends Vertex< E >, E extends Edge< V > >
+	implements RefBimap< E, JunctionOverlayEdgeWrapper< V, E > >
+{
+	private final RefCollection< JunctionOverlayEdgeWrapper< V, E > > edges;
+
+	public JunctionOverlayEdgeWrapperBimap( final JunctionOverlayGraphWrapper< V, E > graph )
+	{
+		this.edges = graph.edges();
+	}
+
+	@Override
+	public E getLeft( final JunctionOverlayEdgeWrapper< V, E > right )
+	{
+		return right.we;
+	}
+
+	@Override
+	public JunctionOverlayEdgeWrapper< V, E > getRight( final E left, final JunctionOverlayEdgeWrapper< V, E > ref )
+	{
+		ref.we = left;
+		return ref.orNull();
+	}
+
+	@Override
+	public E reusableLeftRef( final JunctionOverlayEdgeWrapper< V, E > right )
+	{
+		return right.ref;
+	}
+
+	@Override
+	public JunctionOverlayEdgeWrapper< V, E > reusableRightRef()
+	{
+		return edges.createRef();
+	}
+
+	@Override
+	public void releaseRef( final JunctionOverlayEdgeWrapper< V, E > ref )
+	{
+		edges.releaseRef( ref );
+	}
+}

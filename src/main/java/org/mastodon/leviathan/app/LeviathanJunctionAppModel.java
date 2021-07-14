@@ -45,7 +45,7 @@ import org.scijava.ui.behaviour.util.Actions;
  *
  * @author Jean-Yves Tinevez
  */
-public class LeviathanAppModel extends MastodonAppModel< JunctionModel, Junction, MembranePart >
+public class LeviathanJunctionAppModel extends MastodonAppModel< JunctionModel, Junction, MembranePart >
 {
 	private static final int NUM_GROUPS = 3;
 
@@ -57,7 +57,7 @@ public class LeviathanAppModel extends MastodonAppModel< JunctionModel, Junction
 
 	private final int maxTimepoint;
 
-	public LeviathanAppModel(
+	public LeviathanJunctionAppModel(
 			final JunctionModel model,
 			final SharedBigDataViewerData sharedBdvData,
 			final KeyPressedManager keyPressedManager,

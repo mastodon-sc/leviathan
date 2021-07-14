@@ -26,7 +26,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  * #L%
  */
-package org.mastodon.leviathan.views.bdv.overlay.wrap;
+package org.mastodon.leviathan.views.bdv.overlay.junction.wrap;
 
 import java.util.Iterator;
 

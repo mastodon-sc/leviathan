@@ -26,11 +26,11 @@
  * POSSIBILITY OF SUCH DAMAGE.
  * #L%
  */
-package org.mastodon.leviathan.views.bdv.overlay.wrap;
+package org.mastodon.leviathan.views.bdv.overlay.junction.wrap;
 
 import org.mastodon.graph.Edge;
 import org.mastodon.graph.Vertex;
-import org.mastodon.leviathan.views.bdv.overlay.JunctionOverlayEdge;
+import org.mastodon.leviathan.views.bdv.overlay.junction.JunctionOverlayEdge;
 
 public class JunctionOverlayEdgeWrapper< V extends Vertex< E >, E extends Edge< V > >
 		implements JunctionOverlayEdge< JunctionOverlayEdgeWrapper< V, E >, JunctionOverlayVertexWrapper< V, E > >
@@ -118,7 +118,7 @@ public class JunctionOverlayEdgeWrapper< V extends Vertex< E >, E extends Edge< 
 	public boolean equals( final Object obj )
 	{
 		return obj instanceof JunctionOverlayEdgeWrapper< ?, ? > &&
-				we.equals( ( (org.mastodon.leviathan.views.bdv.overlay.wrap.JunctionOverlayEdgeWrapper< ?, ? > ) obj ).we );
+				we.equals( ( (org.mastodon.leviathan.views.bdv.overlay.junction.wrap.JunctionOverlayEdgeWrapper< ?, ? > ) obj ).we );
 	}
 
 	/**

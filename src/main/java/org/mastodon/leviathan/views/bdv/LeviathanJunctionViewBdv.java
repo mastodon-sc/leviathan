@@ -42,18 +42,18 @@ import org.mastodon.app.ui.MastodonFrameViewActions;
 import org.mastodon.app.ui.ViewMenu;
 import org.mastodon.app.ui.ViewMenuBuilder;
 import org.mastodon.app.ui.ViewMenuBuilder.JMenuHandle;
-import org.mastodon.leviathan.app.LeviathanAppModel;
+import org.mastodon.leviathan.app.LeviathanJunctionAppModel;
 import org.mastodon.leviathan.model.Junction;
 import org.mastodon.leviathan.model.JunctionGraph;
 import org.mastodon.leviathan.model.JunctionModel;
 import org.mastodon.leviathan.model.MembranePart;
-import org.mastodon.leviathan.views.LeviathanView;
-import org.mastodon.leviathan.views.bdv.overlay.JunctionModelOverlayProperties;
-import org.mastodon.leviathan.views.bdv.overlay.JunctionOverlayGraphRenderer;
-import org.mastodon.leviathan.views.bdv.overlay.JunctionOverlayNavigation;
-import org.mastodon.leviathan.views.bdv.overlay.wrap.JunctionOverlayEdgeWrapper;
-import org.mastodon.leviathan.views.bdv.overlay.wrap.JunctionOverlayGraphWrapper;
-import org.mastodon.leviathan.views.bdv.overlay.wrap.JunctionOverlayVertexWrapper;
+import org.mastodon.leviathan.views.LeviathanJunctionView;
+import org.mastodon.leviathan.views.bdv.overlay.junction.JunctionModelOverlayProperties;
+import org.mastodon.leviathan.views.bdv.overlay.junction.JunctionOverlayGraphRenderer;
+import org.mastodon.leviathan.views.bdv.overlay.junction.JunctionOverlayNavigation;
+import org.mastodon.leviathan.views.bdv.overlay.junction.wrap.JunctionOverlayEdgeWrapper;
+import org.mastodon.leviathan.views.bdv.overlay.junction.wrap.JunctionOverlayGraphWrapper;
+import org.mastodon.leviathan.views.bdv.overlay.junction.wrap.JunctionOverlayVertexWrapper;
 import org.mastodon.mamut.MainWindow;
 import org.mastodon.mamut.MamutMenuBuilder;
 import org.mastodon.mamut.UndoActions;
@@ -75,7 +75,7 @@ import bdv.BigDataViewerActions;
 import bdv.viewer.NavigationActions;
 import bdv.viewer.ViewerPanel;
 
-public class LeviathanViewBdv extends LeviathanView< 
+public class LeviathanJunctionViewBdv extends LeviathanJunctionView< 
 	JunctionOverlayGraphWrapper< Junction, MembranePart >, 
 	JunctionOverlayVertexWrapper< Junction, MembranePart >, 
 	JunctionOverlayEdgeWrapper< Junction, MembranePart > >
@@ -94,7 +94,7 @@ public class LeviathanViewBdv extends LeviathanView<
 	 */
 	private final ColoringModel coloringModel;
 
-	public LeviathanViewBdv( final LeviathanAppModel appModel )
+	public LeviathanJunctionViewBdv( final LeviathanJunctionAppModel appModel )
 	{
 		super( appModel,
 				new JunctionOverlayGraphWrapper<>(

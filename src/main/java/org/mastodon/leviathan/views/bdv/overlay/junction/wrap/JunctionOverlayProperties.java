@@ -26,54 +26,37 @@
  * POSSIBILITY OF SUCH DAMAGE.
  * #L%
  */
-package org.mastodon.leviathan.views.bdv.overlay.wrap;
+package org.mastodon.leviathan.views.bdv.overlay.junction.wrap;
 
-import java.util.Iterator;
-
-import org.mastodon.graph.Edge;
-import org.mastodon.graph.GraphIdBimap;
-import org.mastodon.graph.Vertex;
-
-public class JunctionOverlayVertexIteratorWrapper< V extends Vertex< E >, E extends Edge< V > >
-	implements Iterator< JunctionOverlayVertexWrapper< V, E > >
+public interface JunctionOverlayProperties< V, E >
 {
-	private final JunctionOverlayVertexWrapper< V, E > vertex;
+	public void localize( V v, final double[] position );
 
-	private Iterator< V > wrappedIterator;
+	public double getDoublePosition( V v, final int d );
 
-	private final GraphIdBimap< V, E > idmap;
+	public void setPosition( V v, double position, int d );
 
-	public JunctionOverlayVertexIteratorWrapper(
-			final JunctionOverlayGraphWrapper< V, E > graph,
-			final JunctionOverlayVertexWrapper< V, E > vertex,
-			final Iterator< V > wrappedIterator )
-	{
-		this.idmap = graph.idmap;
-		this.vertex = vertex;
-		this.wrappedIterator = wrappedIterator;
-	}
+	public void setPosition( V v, final double[] position );
 
-	void wrap( final Iterator< V > iterator )
-	{
-		wrappedIterator = iterator;
-	}
+	public int getTimepoint( V v );
 
-	@Override
-	public boolean hasNext()
-	{
-		return wrappedIterator.hasNext();
-	}
+	public void setPixels( E e, double[] pixels );
 
-	@Override
-	public JunctionOverlayVertexWrapper< V, E > next()
-	{
-		vertex.wv = idmap.getVertex( idmap.getVertexId( wrappedIterator.next() ), vertex.ref );
-		return vertex;
-	}
+	public double[] getPixels( E e );
 
-	@Override
-	public void remove()
-	{
-		throw new UnsupportedOperationException();
-	}
+	public V addVertex( V ref );
+
+	public V initVertex( V v, int timepoint, double[] position );
+
+	public E addEdge( V source, V target, E ref );
+
+	public E insertEdge( V source, final int sourceOutIndex, V target, final int targetInIndex, final E ref );
+
+	public E initEdge( E e );
+
+	public void removeEdge( E e );
+
+	public void removeVertex( V v );
+
+	public void notifyGraphChanged();
 }

@@ -26,14 +26,14 @@
  * POSSIBILITY OF SUCH DAMAGE.
  * #L%
  */
-package org.mastodon.leviathan.views.bdv.overlay.wrap;
+package org.mastodon.leviathan.views.bdv.overlay.junction.wrap;
 
 import java.util.Iterator;
 
 import org.mastodon.graph.Edge;
 import org.mastodon.graph.Edges;
 import org.mastodon.graph.Vertex;
-import org.mastodon.leviathan.views.bdv.overlay.JunctionOverlayVertex;
+import org.mastodon.leviathan.views.bdv.overlay.junction.JunctionOverlayVertex;
 
 import net.imglib2.Localizable;
 import net.imglib2.RealLocalizable;
@@ -133,7 +133,7 @@ public class JunctionOverlayVertexWrapper< V extends Vertex< E >, E extends Edge
 	public boolean equals( final Object obj )
 	{
 		return obj instanceof JunctionOverlayVertexWrapper< ?, ? > &&
-				wv.equals( ( (org.mastodon.leviathan.views.bdv.overlay.wrap.JunctionOverlayVertexWrapper< ?, ? > ) obj ).wv );
+				wv.equals( ( (org.mastodon.leviathan.views.bdv.overlay.junction.wrap.JunctionOverlayVertexWrapper< ?, ? > ) obj ).wv );
 	}
 
 	/**

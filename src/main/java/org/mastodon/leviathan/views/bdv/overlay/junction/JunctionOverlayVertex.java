@@ -26,37 +26,19 @@
  * POSSIBILITY OF SUCH DAMAGE.
  * #L%
  */
-package org.mastodon.leviathan.views.bdv.overlay.wrap;
+package org.mastodon.leviathan.views.bdv.overlay.junction;
 
-public interface JunctionOverlayProperties< V, E >
+import org.mastodon.Ref;
+import org.mastodon.spatial.HasTimepoint;
+import org.mastodon.views.bdv.overlay.OverlayVertex;
+
+import net.imglib2.RealLocalizable;
+import net.imglib2.RealPositionable;
+
+public interface JunctionOverlayVertex< O extends JunctionOverlayVertex< O, E >, E extends JunctionOverlayEdge< E, ? > >
+		extends OverlayVertex< O, E >, Ref< O >, RealLocalizable, RealPositionable, HasTimepoint
 {
-	public void localize( V v, final double[] position );
 
-	public double getDoublePosition( V v, final int d );
+	public O init( final int timepoint, final double[] position );
 
-	public void setPosition( V v, double position, int d );
-
-	public void setPosition( V v, final double[] position );
-
-	public int getTimepoint( V v );
-
-	public void setPixels( E e, double[] pixels );
-
-	public double[] getPixels( E e );
-
-	public V addVertex( V ref );
-
-	public V initVertex( V v, int timepoint, double[] position );
-
-	public E addEdge( V source, V target, E ref );
-
-	public E insertEdge( V source, final int sourceOutIndex, V target, final int targetInIndex, final E ref );
-
-	public E initEdge( E e );
-
-	public void removeEdge( E e );
-
-	public void removeVertex( V v );
-
-	public void notifyGraphChanged();
 }

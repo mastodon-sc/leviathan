@@ -26,58 +26,54 @@
  * POSSIBILITY OF SUCH DAMAGE.
  * #L%
  */
-package org.mastodon.leviathan.views.bdv.overlay.wrap;
+package org.mastodon.leviathan.views.bdv.overlay.junction.wrap;
 
 import java.util.Iterator;
-import java.util.concurrent.locks.Lock;
 
 import org.mastodon.graph.Edge;
+import org.mastodon.graph.GraphIdBimap;
 import org.mastodon.graph.Vertex;
-import org.mastodon.spatial.SpatialIndex;
-import org.mastodon.spatial.SpatioTemporalIndex;
 
-public class SpatioTemporalIndexWrapper< V extends Vertex< E >, E extends Edge< V > >
-		implements SpatioTemporalIndex< JunctionOverlayVertexWrapper< V, E > >
+public class JunctionOverlayEdgeIteratorWrapper< V extends Vertex< E >, E extends Edge< V > >
+	implements Iterator< JunctionOverlayEdgeWrapper< V, E > >
 {
-	private final JunctionOverlayGraphWrapper< V, E > graphWrapper;
+	private final JunctionOverlayEdgeWrapper< V, E > edge;
 
-	private final SpatioTemporalIndex< V > wrappedIndex;
+	private Iterator< E > wrappedIterator;
 
-	public SpatioTemporalIndexWrapper( final JunctionOverlayGraphWrapper< V, E > graphWrapper, final SpatioTemporalIndex< V > index )
+	private final GraphIdBimap< V, E > idmap;
+
+	public JunctionOverlayEdgeIteratorWrapper(
+			final JunctionOverlayGraphWrapper< V, E > graph,
+			final JunctionOverlayEdgeWrapper< V, E > edge,
+			final Iterator< E > wrappedIterator )
 	{
-		this.graphWrapper = graphWrapper;
-		this.wrappedIndex = index;
+		this.idmap = graph.idmap;
+		this.edge = edge;
+		this.wrappedIterator = wrappedIterator;
+	}
+
+	void wrap( final Iterator< E > iterator )
+	{
+		wrappedIterator = iterator;
 	}
 
 	@Override
-	public Iterator< JunctionOverlayVertexWrapper< V, E > > iterator()
+	public boolean hasNext()
 	{
-		return new OverlayVertexIteratorWrapper< >( graphWrapper, graphWrapper.vertexRef(), wrappedIndex.iterator() );
+		return wrappedIterator.hasNext();
 	}
 
 	@Override
-	public Lock readLock()
+	public JunctionOverlayEdgeWrapper< V, E > next()
 	{
-		return wrappedIndex.readLock();
+		edge.we = idmap.getEdge( idmap.getEdgeId( wrappedIterator.next() ), edge.ref );
+		return edge;
 	}
 
 	@Override
-	public SpatialIndex< JunctionOverlayVertexWrapper< V, E > > getSpatialIndex( final int timepoint )
+	public void remove()
 	{
-		final SpatialIndex< V > index = wrappedIndex.getSpatialIndex( timepoint );
-		if ( index == null )
-			return null;
-		else
-			return new SpatialIndexWrapper< >( graphWrapper, index );
-	}
-
-	@Override
-	public SpatialIndex< JunctionOverlayVertexWrapper< V, E > > getSpatialIndex( final int fromTimepoint, final int toTimepoint )
-	{
-		final SpatialIndex< V > index = wrappedIndex.getSpatialIndex( fromTimepoint, toTimepoint );
-		if ( index == null )
-			return null;
-		else
-			return new SpatialIndexWrapper< >( graphWrapper, index );
+		throw new UnsupportedOperationException();
 	}
 }

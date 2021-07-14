@@ -26,54 +26,51 @@
  * POSSIBILITY OF SUCH DAMAGE.
  * #L%
  */
-package org.mastodon.leviathan.views.bdv.overlay.wrap;
+package org.mastodon.leviathan.views.bdv.overlay.junction.wrap;
 
-import java.util.Iterator;
-
+import org.mastodon.adapter.RefBimap;
+import org.mastodon.collection.RefCollection;
 import org.mastodon.graph.Edge;
-import org.mastodon.graph.GraphIdBimap;
 import org.mastodon.graph.Vertex;
 
-public class JunctionOverlayEdgeIteratorWrapper< V extends Vertex< E >, E extends Edge< V > >
-	implements Iterator< JunctionOverlayEdgeWrapper< V, E > >
+public class JunctionOverlayVertexWrapperBimap< V extends Vertex< E >, E extends Edge< V > >
+	implements RefBimap< V, JunctionOverlayVertexWrapper< V, E > >
 {
-	private final JunctionOverlayEdgeWrapper< V, E > edge;
+	private final RefCollection< JunctionOverlayVertexWrapper< V, E > > vertices;
 
-	private Iterator< E > wrappedIterator;
-
-	private final GraphIdBimap< V, E > idmap;
-
-	public JunctionOverlayEdgeIteratorWrapper(
-			final JunctionOverlayGraphWrapper< V, E > graph,
-			final JunctionOverlayEdgeWrapper< V, E > edge,
-			final Iterator< E > wrappedIterator )
+	public JunctionOverlayVertexWrapperBimap( final JunctionOverlayGraphWrapper< V, E > graph )
 	{
-		this.idmap = graph.idmap;
-		this.edge = edge;
-		this.wrappedIterator = wrappedIterator;
-	}
-
-	void wrap( final Iterator< E > iterator )
-	{
-		wrappedIterator = iterator;
+		this.vertices = graph.vertices();
 	}
 
 	@Override
-	public boolean hasNext()
+	public V getLeft( final JunctionOverlayVertexWrapper< V, E > right )
 	{
-		return wrappedIterator.hasNext();
+		return right == null ? null : right.wv;
 	}
 
 	@Override
-	public JunctionOverlayEdgeWrapper< V, E > next()
+	public JunctionOverlayVertexWrapper< V, E > getRight( final V left, final JunctionOverlayVertexWrapper< V, E > ref )
 	{
-		edge.we = idmap.getEdge( idmap.getEdgeId( wrappedIterator.next() ), edge.ref );
-		return edge;
+		ref.wv = left;
+		return ref.orNull();
 	}
 
 	@Override
-	public void remove()
+	public V reusableLeftRef( final JunctionOverlayVertexWrapper< V, E > right )
 	{
-		throw new UnsupportedOperationException();
+		return right.ref;
+	}
+
+	@Override
+	public JunctionOverlayVertexWrapper< V, E > reusableRightRef()
+	{
+		return vertices.createRef();
+	}
+
+	@Override
+	public void releaseRef( final JunctionOverlayVertexWrapper< V, E > ref )
+	{
+		vertices.releaseRef( ref );
 	}
 }

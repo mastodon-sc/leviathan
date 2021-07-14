@@ -26,7 +26,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  * #L%
  */
-package org.mastodon.leviathan.views.bdv.overlay.wrap;
+package org.mastodon.leviathan.views.bdv.overlay.junction.wrap;
 
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -42,7 +42,7 @@ import org.mastodon.graph.Edges;
 import org.mastodon.graph.GraphIdBimap;
 import org.mastodon.graph.ReadOnlyGraph;
 import org.mastodon.graph.Vertex;
-import org.mastodon.leviathan.views.bdv.overlay.JunctionOverlayGraph;
+import org.mastodon.leviathan.views.bdv.overlay.junction.JunctionOverlayGraph;
 import org.mastodon.spatial.SpatioTemporalIndex;
 
 public class JunctionOverlayGraphWrapper< V extends Vertex< E >, E extends Edge< V > > implements
@@ -352,4 +352,14 @@ public class JunctionOverlayGraphWrapper< V extends Vertex< E >, E extends Edge<
 			return new JunctionOverlayEdgeIteratorWrapper<>( JunctionOverlayGraphWrapper.this, JunctionOverlayGraphWrapper.this.edgeRef(), wrappedGraph.edges().iterator() );
 		}
 	};
+
+	public RefPool< JunctionOverlayVertexWrapper< V, E > > getVertexPool()
+	{
+		return vertexPool;
+	}
+
+	public RefPool< JunctionOverlayEdgeWrapper< V, E > > getEdgePool()
+	{
+		return edgePool;
+	}
 }
