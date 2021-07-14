@@ -6,6 +6,10 @@ import org.mastodon.pool.ByteMappedElement;
 public class MembranePart extends AbstractListenableEdge< MembranePart, Junction, MembranePartPool, ByteMappedElement >
 {
 
+	public static final int UNINITIALIZED = -2;
+
+	public static final int PERIMETER = -1;
+
 	/**
 	 * Initialize a new {@MembranePart MembranePart}.
 	 *
@@ -13,6 +17,8 @@ public class MembranePart extends AbstractListenableEdge< MembranePart, Junction
 	 */
 	public MembranePart init()
 	{
+		pool.cellIdCCW.set( this, UNINITIALIZED );
+		pool.cellIdCW.set( this, UNINITIALIZED );
 		super.initDone();
 		return this;
 	}
@@ -41,5 +47,25 @@ public class MembranePart extends AbstractListenableEdge< MembranePart, Junction
 	public double[] getPixels()
 	{
 		return pool.pixels.get( this );
+	}
+
+	public void setCellIdCCW( final int cellId )
+	{
+		pool.cellIdCCW.set( this, cellId );
+	}
+
+	public void setCellIdCW( final int cellId )
+	{
+		pool.cellIdCW.set( this, cellId );
+	}
+
+	public int getCellIdCCW()
+	{
+		return pool.cellIdCCW.get( this );
+	}
+
+	public int getCellIdCW()
+	{
+		return pool.cellIdCW.get( this );
 	}
 }
