@@ -163,8 +163,6 @@ public class MaskImporter< T extends RealType< T > >
 						( long ) target.getDoublePosition( 0 ),
 						( long ) target.getDoublePosition( 1 ) } ) );
 				final double[] pos = arr.copyArray();
-				// Convert to relative pos.
-				toRelative( pos, source );
 
 				final MembranePart edge = graph.addEdge( source, target, eref ).init();
 				edge.setPixels( pos );
@@ -174,24 +172,6 @@ public class MaskImporter< T extends RealType< T > >
 			}
 			// Did not found a next pixel to iterate to. Finished for this stem.
 			return;
-		}
-	}
-
-	private void toRelative( final double[] pos, final RealLocalizable start )
-	{
-		if ( pos.length < 2 )
-			return;
-
-		double x0 = start.getDoublePosition( 0 );
-		double y0 = start.getDoublePosition( 1 );
-		for ( int i = 0; i < pos.length; i = i + 2 )
-		{
-			final double x1 = pos[ i ];
-			final double y1 = pos[ i + 1 ];
-			pos[ i ] -= x0;
-			pos[ i + 1 ] -= y0;
-			x0 = x1;
-			y0 = y1;
 		}
 	}
 
