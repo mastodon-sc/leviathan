@@ -1,19 +1,20 @@
 package org.mastodon.leviathan;
 
-import org.mastodon.collection.RefCollections;
-import org.mastodon.collection.RefList;
-import org.mastodon.collection.RefSet;
-import org.mastodon.leviathan.algorithms.JunctionGraphUtils;
+import org.mastodon.leviathan.algorithms.FindFaces;
 import org.mastodon.leviathan.algorithms.MaskImporter;
-import org.mastodon.leviathan.app.LeviathanAppModel;
+import org.mastodon.leviathan.app.LeviathanCellAppModel;
+import org.mastodon.leviathan.app.LeviathanJunctionAppModel;
 import org.mastodon.leviathan.app.LeviathanKeyConfigContexts;
+import org.mastodon.leviathan.model.Cell;
+import org.mastodon.leviathan.model.CellGraph;
+import org.mastodon.leviathan.model.CellModel;
 import org.mastodon.leviathan.model.Junction;
 import org.mastodon.leviathan.model.JunctionGraph;
 import org.mastodon.leviathan.model.JunctionModel;
 import org.mastodon.leviathan.model.MembranePart;
 import org.mastodon.leviathan.plugin.LeviathanPlugins;
-import org.mastodon.leviathan.views.bdv.LeviathanViewBdv;
-import org.mastodon.model.SelectionModel;
+import org.mastodon.leviathan.views.bdv.LeviathanCellViewBdv;
+import org.mastodon.leviathan.views.bdv.LeviathanJunctionViewBdv;
 import org.mastodon.ui.coloring.feature.FeatureColorModeManager;
 import org.mastodon.ui.keymap.Keymap;
 import org.mastodon.ui.keymap.KeymapManager;
@@ -42,6 +43,10 @@ public class ImportMaskExample
 		final LeviathanPlugins plugins = new LeviathanPlugins( keymap );
 		final Actions globalAppActions = new Actions( keymap.getConfig(), LeviathanKeyConfigContexts.LEVIATHAN );
 
+		/*
+		 * Junction graph.
+		 */
+
 		final String maskPath = "samples/Segmentation-2.xml";
 		final SpimDataMinimal spimData = new XmlIoSpimDataMinimal().load( maskPath );
 		final SharedBigDataViewerData sharedBdvData = new SharedBigDataViewerData(
@@ -50,7 +55,7 @@ public class ImportMaskExample
 				options,
 				() -> System.out.println( "Repaint" ) );
 
-		final JunctionModel model = new JunctionModel( "pixel", "frame" );
+		final JunctionModel junctionModel = new JunctionModel( "pixel", "frame" );
 
 		final int boundSourceID = 0;
 		final int timepoint = 0;
@@ -58,63 +63,56 @@ public class ImportMaskExample
 		final RandomAccessibleInterval< T > img = Views.dropSingletonDimensions(
 				( RandomAccessibleInterval< T > ) sharedBdvData.getSources().get( boundSourceID ).getSpimSource().getSource( timepoint, 0 ) );
 
-		MaskImporter.importMask( img, model.getGraph(), timepoint );
+		MaskImporter.importMask( img, junctionModel.getGraph(), timepoint );
 
-		final LeviathanAppModel appModel =
-				new LeviathanAppModel(
-						model,
+		final LeviathanJunctionAppModel junctionAppModel =
+				new LeviathanJunctionAppModel(
+						junctionModel,
 						sharedBdvData,
 						keyPressedManager,
 						featureColorModeManager,
 						keymapManager,
 						plugins,
 						globalAppActions );
+		new LeviathanJunctionViewBdv( junctionAppModel );
 
-		final SelectionModel< Junction, MembranePart > selectionModel = appModel.getSelectionModel();
-		selectionModel.listeners().add( () -> {
-			final RefSet< MembranePart > edges = appModel.getSelectionModel().getSelectedEdges();
-			if ( edges.size() != 1 )
-				return;
+		/*
+		 * Cell graph.
+		 */
 
-			final JunctionGraph graph = model.getGraph();
-			final MembranePart eref1 = graph.edgeRef();
-			final MembranePart eref2 = graph.edgeRef();
-			final Junction vref1 = graph.vertexRef();
-			final Junction vref2 = graph.vertexRef();
+		final CellModel cellModel = new CellModel( junctionModel.getSpaceUnits(), junctionModel.getTimeUnits() );
+		FindFaces.findFaces( junctionAppModel.getModel().getGraph(), cellModel.getGraph() );
 
-			final MembranePart start = edges.iterator().next();
-			final Junction other = start.getSource( vref1 );
-			final MembranePart next = JunctionGraphUtils.nextCounterClockWiseEdge( graph, start, other, eref1 );
-			selectionModel.setSelected( other, true );
-			selectionModel.setSelected( next, true );
+		final LeviathanCellAppModel cellAppModel = new LeviathanCellAppModel(
+				cellModel,
+				junctionAppModel.getModel(),
+				sharedBdvData,
+				keyPressedManager,
+				featureColorModeManager,
+				keymapManager,
+				plugins,
+				globalAppActions );
+		new LeviathanCellViewBdv( cellAppModel );
+	}
 
-			final RefList< MembranePart > face = RefCollections.createRefList( graph.edges() );
-			face.add( start );
-			selectionModel.pauseListeners();
-			while ( !next.equals( start ) )
+	public static void printCellGraph( final JunctionGraph junctionGraph, final CellGraph cellGraph )
+	{
+		final Junction jref = junctionGraph.vertexRef();
+		final MembranePart mref = junctionGraph.edgeRef();
+		System.out.println( "Cell graph from junction graph:" );
+		for ( final Cell cell : cellGraph.vertices() )
+		{
+			final int[] mbids = cell.getMembranes();
+			final MembranePart mb0 = junctionGraph.getGraphIdBimap().getEdge( mbids[ 0 ], mref );
+			String mbstr = "" + mb0.getSource( jref ).getInternalPoolIndex();
+
+			for ( int i = 1; i < mbids.length; i++ )
 			{
-				face.add( next );
-				JunctionGraphUtils.junctionAcross( next, other, vref2 );
-				JunctionGraphUtils.nextCounterClockWiseEdge( graph, next, vref2, eref2 );
-				selectionModel.setSelected( eref2, true );
-				selectionModel.setSelected( vref2, true );
-				other.refTo( vref2 );
-				next.refTo( eref2 );
+				final MembranePart mb = junctionGraph.getGraphIdBimap().getEdge( mbids[ i ], mref );
+				mbstr += ", " + mb.getSource( jref ).getInternalPoolIndex();
 			}
-			selectionModel.resumeListeners();
-
-			final StringBuilder str = new StringBuilder( "Selected face made of " );
-			str.append( face.get( 0 ).getInternalPoolIndex() );
-			for ( int i = 1; i < face.size(); i++ )
-				str.append( ", " + face.get( i ).getInternalPoolIndex() );
-			System.out.println( str );
-
-			graph.releaseRef( eref1 );
-			graph.releaseRef( eref2 );
-			graph.releaseRef( vref1 );
-			graph.releaseRef( vref2 );
-		} );
-
-		new LeviathanViewBdv( appModel );
+			System.out.println( String.format( " - cell %3d: x = %5.1f y = %5.1f, from edges: %s" ,
+					cell.getInternalPoolIndex(), cell.getDoublePosition( 0 ), cell.getDoublePosition( 1 ), mbstr ) );
+		}
 	}
 }
