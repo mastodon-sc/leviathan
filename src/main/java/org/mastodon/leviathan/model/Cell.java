@@ -66,6 +66,16 @@ public class Cell extends AbstractSpot< Cell, Link, CellPool, ByteMappedElement,
 		return pool.membranes.get( this );
 	}
 
+	public void setBoundary( final double[] boundary )
+	{
+		pool.boundary.set( this, boundary );
+	}
+
+	public double[] getBoundary()
+	{
+		return pool.boundary.get( this );
+	}
+
 	@Override
 	public String toString()
 	{

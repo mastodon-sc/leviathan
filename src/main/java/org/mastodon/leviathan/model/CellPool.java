@@ -4,7 +4,6 @@ import org.mastodon.model.AbstractSpotPool;
 import org.mastodon.pool.ByteMappedElement;
 import org.mastodon.pool.ByteMappedElementArray;
 import org.mastodon.pool.SingleArrayMemPool;
-import org.mastodon.pool.attributes.DoubleAttribute;
 import org.mastodon.properties.ObjPropertyMap;
 import org.mastodon.properties.Property;
 
@@ -17,15 +16,13 @@ public class CellPool extends AbstractSpotPool< Cell, Link, ByteMappedElement, C
 		{
 			super( 2 );
 		}
-
-		final DoubleField boundingSphereRadiusSqu = doubleField();
 	}
 
 	public static final CellLayout layout = new CellLayout();
 
-	final DoubleAttribute< Cell > boundingSphereRadiusSqu = new DoubleAttribute<>( layout.boundingSphereRadiusSqu, this );
-
 	final ObjPropertyMap< Cell, int[] > membranes;
+
+	final ObjPropertyMap< Cell, double[] > boundary;
 
 	final ObjPropertyMap< Cell, String > label;
 
@@ -34,6 +31,8 @@ public class CellPool extends AbstractSpotPool< Cell, Link, ByteMappedElement, C
 		super( initialCapacity, layout, Cell.class, SingleArrayMemPool.factory( ByteMappedElementArray.factory ) );
 		membranes = new ObjPropertyMap<>( this );
 		registerPropertyMap( membranes );
+		boundary = new ObjPropertyMap<>( this );
+		registerPropertyMap( boundary );
 		label = new ObjPropertyMap<>( this );
 		registerPropertyMap( label );
 	}
@@ -49,14 +48,14 @@ public class CellPool extends AbstractSpotPool< Cell, Link, ByteMappedElement, C
 		return position;
 	}
 
-	public final Property< Cell > boundingSphereRadiusSquProperty()
-	{
-		return boundingSphereRadiusSqu;
-	}
-
 	public final Property< Cell > membraneProperty()
 	{
 		return membranes;
+	}
+
+	public ObjPropertyMap< Cell, double[] > boundary()
+	{
+		return boundary;
 	}
 
 	public final Property< Cell > labelProperty()
