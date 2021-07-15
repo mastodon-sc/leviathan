@@ -1,0 +1,262 @@
+/*-
+ * #%L
+ * Mastodon
+ * %%
+ * Copyright (C) 2014 - 2021 Tobias Pietzsch, Jean-Yves Tinevez
+ * %%
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ * 
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ * #L%
+ */
+package org.mastodon.leviathan.app;
+
+import static org.mastodon.app.MastodonIcons.BDV_ICON_MEDIUM;
+import static org.mastodon.app.MastodonIcons.FEATURES_ICON_MEDIUM;
+import static org.mastodon.app.MastodonIcons.MAINWINDOW_BG;
+import static org.mastodon.app.MastodonIcons.MASTODON_ICON;
+import static org.mastodon.app.MastodonIcons.TABLE_ICON_MEDIUM;
+import static org.mastodon.app.MastodonIcons.TAGS_ICON_MEDIUM;
+import static org.mastodon.app.ui.ViewMenuBuilder.item;
+import static org.mastodon.mamut.MamutMenuBuilder.fileMenu;
+import static org.mastodon.mamut.MamutMenuBuilder.windowMenu;
+
+import java.awt.BorderLayout;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+
+import javax.swing.ActionMap;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenuBar;
+import javax.swing.JPanel;
+import javax.swing.JSeparator;
+import javax.swing.SwingConstants;
+import javax.swing.WindowConstants;
+
+import org.mastodon.app.ui.ViewMenu;
+import org.mastodon.mamut.MamutMenuBuilder;
+import org.mastodon.ui.keymap.KeyConfigContexts;
+import org.mastodon.ui.keymap.Keymap;
+
+public class LeviathanMainWindow extends JFrame
+{
+	private static final long serialVersionUID = 1L;
+
+	protected final JMenuBar menubar;
+
+	private final ViewMenu menu;
+
+	public LeviathanMainWindow( final LeviathanWM windowManager )
+	{
+		super( "Leviathan" );
+		setIconImages( MASTODON_ICON );
+		setLocationByPlatform( true );
+		setLocationRelativeTo( null );
+
+		final ActionMap actionMap = windowManager.getGlobalAppActions().getActionMap();
+
+		final JPanel buttonsPanel = new JPanel();
+		final GridBagLayout gbl = new GridBagLayout();
+		gbl.columnWeights = new double[] { 1.0, 1.0 };
+		gbl.rowWeights = new double[] { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+		buttonsPanel.setLayout( gbl );
+
+		final GridBagConstraints separator_gbc = new GridBagConstraints();
+		separator_gbc.fill = GridBagConstraints.HORIZONTAL;
+		separator_gbc.gridwidth = 2;
+		separator_gbc.insets = new Insets( 5, 5, 5, 5 );
+		separator_gbc.gridx = 0;
+
+		final GridBagConstraints label_gbc = new GridBagConstraints();
+		label_gbc.fill = GridBagConstraints.HORIZONTAL;
+		label_gbc.gridwidth = 2;
+		label_gbc.insets = new Insets( 5, 5, 5, 5 );
+		label_gbc.gridx = 0;
+
+		final GridBagConstraints button_gbc_right = new GridBagConstraints();
+		button_gbc_right.fill = GridBagConstraints.BOTH;
+		button_gbc_right.insets = new Insets( 0, 0, 5, 10 );
+		button_gbc_right.gridx = 1;
+
+		final GridBagConstraints button_gbc_left = new GridBagConstraints();
+		button_gbc_left.fill = GridBagConstraints.BOTH;
+		button_gbc_left.insets = new Insets( 0, 10, 5, 5 );
+		button_gbc_left.gridx = 0;
+
+		int gridy = 0;
+
+		label_gbc.gridy = gridy;
+		final JLabel viewsLabel = new JLabel( "Views:" );
+		viewsLabel.setFont( buttonsPanel.getFont().deriveFont( Font.BOLD ) );
+		buttonsPanel.add( viewsLabel, label_gbc );
+
+		++gridy;
+
+		final JButton junctionBdvButton = new JButton( actionMap.get( LeviathanWM.NEW_JUNCTION_BDV_VIEW ) );
+		prepareButton( junctionBdvButton, "Junction BDV", BDV_ICON_MEDIUM );
+		button_gbc_left.gridy = gridy;
+		buttonsPanel.add( junctionBdvButton, button_gbc_left );
+
+		final JButton cellBdvButton = new JButton( actionMap.get( LeviathanWM.NEW_CELL_BDV_VIEW ) );
+		prepareButton( cellBdvButton, "Cell BDV", BDV_ICON_MEDIUM );
+		button_gbc_right.gridy = gridy;
+		buttonsPanel.add( cellBdvButton, button_gbc_right );
+
+		++gridy;
+
+		final JButton tableButton = new JButton( actionMap.get( LeviathanWM.NEW_CELL_TABLE_VIEW ) );
+		prepareButton( tableButton, "Cell table", TABLE_ICON_MEDIUM );
+		button_gbc_right.gridy = gridy;
+		buttonsPanel.add( tableButton, button_gbc_right );
+
+		final JButton selectionTableButton = new JButton( actionMap.get( LeviathanWM.NEW_CELL_SELECTION_TABLE_VIEW ) );
+		prepareButton( selectionTableButton, "Cell selection table", TABLE_ICON_MEDIUM );
+		button_gbc_left.gridy = gridy;
+		buttonsPanel.add( selectionTableButton, button_gbc_left );
+
+//		final JButton trackschemeButton = new JButton( actionMap.get( LeviathanWM.NEW_TRACKSCHEME_VIEW ) );
+//		prepareButton( trackschemeButton, "trackscheme", TRACKSCHEME_ICON_MEDIUM );
+//		button_gbc_right.gridy = gridy;
+//		buttonsPanel.add( trackschemeButton, button_gbc_right );
+
+		++gridy;
+
+		separator_gbc.gridy = gridy;
+		buttonsPanel.add( new JSeparator(), separator_gbc );
+
+		++gridy;
+
+		label_gbc.gridy = gridy;
+		final JLabel processingLabel = new JLabel( "Processing:" );
+		processingLabel.setFont( buttonsPanel.getFont().deriveFont( Font.BOLD ) );
+		buttonsPanel.add( processingLabel, label_gbc );
+
+		++gridy;
+
+		final JButton featureComputationButton = new JButton( actionMap.get( LeviathanWM.COMPUTE_FEATURE_DIALOG ) );
+		prepareButton( featureComputationButton, "compute features", FEATURES_ICON_MEDIUM );
+		button_gbc_right.gridy = gridy;
+		buttonsPanel.add( featureComputationButton, button_gbc_right );
+
+		++gridy;
+
+		final JButton editTagSetsButton = new JButton( actionMap.get( LeviathanWM.TAGSETS_DIALOG ) );
+		prepareButton( editTagSetsButton, "configure tags", TAGS_ICON_MEDIUM );
+		button_gbc_right.gridy = gridy;
+		buttonsPanel.add( editTagSetsButton, button_gbc_right );
+
+		++gridy;
+
+		separator_gbc.gridy = gridy;
+		buttonsPanel.add( new JSeparator(), separator_gbc );
+
+		++gridy;
+
+		label_gbc.gridy = gridy;
+		final JLabel ioLabel = new JLabel( "Saving:" );
+		ioLabel.setFont( buttonsPanel.getFont().deriveFont( Font.BOLD ) );
+		buttonsPanel.add( ioLabel, label_gbc );
+
+		++gridy;
+
+//		final JButton saveProjectButton = new JButton( actionMap.get( ProjectManager.SAVE_PROJECT ) );
+//		prepareButton( saveProjectButton, "save", SAVE_ICON_MEDIUM );
+//		button_gbc_left.gridy = gridy;
+//		buttonsPanel.add( saveProjectButton, button_gbc_left );
+
+//		final JButton loadProjectButton = new JButton( actionMap.get( ProjectManager.SAVE_PROJECT_AS ) );
+//		prepareButton( loadProjectButton, "save as...", SAVE_AS_ICON_MEDIUM );
+//		button_gbc_right.gridy = gridy;
+//		buttonsPanel.add( loadProjectButton, button_gbc_right );
+
+		/*
+		 * Background with an image.
+		 */
+
+		final JComponent content = new JPanel()
+		{
+
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			public void paintComponent( final Graphics g )
+			{
+				super.paintComponent( g );
+				g.drawImage( MAINWINDOW_BG, 0, 0, this );
+			}
+		};
+		setContentPane( content );
+
+		buttonsPanel.setOpaque( false );
+		content.add( buttonsPanel, BorderLayout.NORTH );
+
+		menubar = new JMenuBar();
+		setJMenuBar( menubar );
+
+		final Keymap keymap = windowManager.getKeymapManager().getForwardDefaultKeymap();
+		menu = new ViewMenu( menubar, keymap, KeyConfigContexts.MASTODON );
+		keymap.updateListeners().add( menu::updateKeymap );
+		addMenus( menu, actionMap );
+		windowManager.getPlugins().addMenus( menu );
+
+		setDefaultCloseOperation( WindowConstants.DISPOSE_ON_CLOSE );
+		addWindowListener( new WindowAdapter()
+		{
+			@Override
+			public void windowClosed( final WindowEvent e )
+			{
+				if ( windowManager != null )
+					windowManager.closeAllWindows();
+			}
+		} );
+
+		pack();
+		setResizable( false );
+	}
+
+	private static void prepareButton( final JButton button, final String txt, final ImageIcon icon )
+	{
+		final JLabel iconLabel = new JLabel( icon );
+		final JLabel clickMe = new JLabel( txt, SwingConstants.CENTER );
+		button.setText( "" );
+		button.setLayout( new BorderLayout() );
+		button.add( iconLabel, BorderLayout.WEST );
+		button.add( clickMe, BorderLayout.CENTER );
+	}
+
+	public static void addMenus( final ViewMenu menu, final ActionMap actionMap )
+	{
+		MamutMenuBuilder.build( menu, actionMap,
+				fileMenu(
+						item( LeviathanWM.PREFERENCES_DIALOG ) ),
+				windowMenu(
+						item( LeviathanWM.NEW_CELL_BDV_VIEW ),
+						item( LeviathanWM.NEW_JUNCTION_BDV_VIEW ) ) );
+	}
+}

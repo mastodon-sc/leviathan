@@ -43,6 +43,7 @@ import org.mastodon.app.ui.ViewMenu;
 import org.mastodon.app.ui.ViewMenuBuilder;
 import org.mastodon.app.ui.ViewMenuBuilder.JMenuHandle;
 import org.mastodon.leviathan.app.LeviathanCellAppModel;
+import org.mastodon.leviathan.app.LeviathanMainWindow;
 import org.mastodon.leviathan.model.cell.Cell;
 import org.mastodon.leviathan.model.cell.CellGraph;
 import org.mastodon.leviathan.model.cell.CellModel;
@@ -59,7 +60,6 @@ import org.mastodon.leviathan.views.bdv.overlay.cell.wrap.CellOverlayVertexWrapp
 import org.mastodon.leviathan.views.bdv.overlay.common.OverlayNavigation;
 import org.mastodon.leviathan.views.bdv.overlay.junction.JunctionModelOverlayProperties;
 import org.mastodon.leviathan.views.bdv.overlay.junction.wrap.JunctionOverlayGraphWrapper;
-import org.mastodon.mamut.MainWindow;
 import org.mastodon.mamut.MamutMenuBuilder;
 import org.mastodon.mamut.UndoActions;
 import org.mastodon.model.AutoNavigateFocusModel;
@@ -110,7 +110,7 @@ public class LeviathanCellViewBdv extends LeviathanCellView< CellOverlayGraphWra
 
 		sharedBdvData = appModel.getSharedBdvData();
 
-		final String windowTitle = "BigDataViewer " + ( bdvName++ );
+		final String windowTitle = "Cell BigDataViewer " + ( bdvName++ );
 		final BigDataViewerMamut bdv = new BigDataViewerMamut( sharedBdvData, windowTitle, groupHandle );
 		final ViewerFrameMamut frame = bdv.getViewerFrame();
 		setFrame( frame );
@@ -123,7 +123,7 @@ public class LeviathanCellViewBdv extends LeviathanCellView< CellOverlayGraphWra
 
 		final JMenuHandle menuHandle = new JMenuHandle();
 		final JMenuHandle tagSetMenuHandle = new JMenuHandle();
-		MainWindow.addMenus( menu, actionMap );
+		LeviathanMainWindow.addMenus( menu, actionMap );
 		MamutMenuBuilder.build( menu,
 				actionMap,
 				fileMenu(
@@ -178,8 +178,7 @@ public class LeviathanCellViewBdv extends LeviathanCellView< CellOverlayGraphWra
 		coloringModel = registerColoring( coloring, menuHandle,
 				() -> viewer.getDisplay().repaint() );
 
-		registerTagSetMenu( tagSetMenuHandle,
-				() -> viewer.getDisplay().repaint() );
+		registerTagSetMenu( tagSetMenuHandle, () -> viewer.getDisplay().repaint() );
 
 		highlightModel.listeners().add( () -> viewer.getDisplay().repaint() );
 		focusModel.listeners().add( () -> viewer.getDisplay().repaint() );

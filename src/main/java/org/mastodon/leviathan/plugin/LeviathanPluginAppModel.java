@@ -30,19 +30,28 @@ package org.mastodon.leviathan.plugin;
 
 import org.mastodon.app.plugin.MastodonAppPluginModel;
 import org.mastodon.leviathan.app.LeviathanJunctionAppModel;
+import org.mastodon.leviathan.app.LeviathanWM;
 
 public class LeviathanPluginAppModel  implements MastodonAppPluginModel
 {
 
 	private final LeviathanJunctionAppModel appModel;
 
-	public LeviathanPluginAppModel( final LeviathanJunctionAppModel appModel )
+	private final LeviathanWM leviathanWM;
+
+	public LeviathanPluginAppModel( final LeviathanJunctionAppModel appModel, final LeviathanWM leviathanWM )
 	{
 		this.appModel = appModel;
+		this.leviathanWM = leviathanWM;
 	}
 
 	public LeviathanJunctionAppModel getAppModel()
 	{
 		return appModel;
+	}
+
+	public LeviathanWM getLeviathanWM()
+	{
+		return leviathanWM;
 	}
 }
