@@ -35,6 +35,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.geom.Path2D;
+import java.awt.geom.Rectangle2D;
 
 import org.mastodon.collection.RefCollection;
 import org.mastodon.collection.RefCollections;
@@ -68,6 +69,8 @@ import net.imglib2.type.numeric.ARGBType;
 public class CellOverlayGraphRenderer< V extends CellOverlayVertex< V, E >, E extends CellOverlayEdge< E, V > >
 		implements OverlayGraphRenderer< V, E >
 {
+
+	public static final double pointRadius = 2.5;
 
 	private int width;
 
@@ -109,7 +112,7 @@ public class CellOverlayGraphRenderer< V extends CellOverlayVertex< V, E >, E ex
 		this.visibilities = new Visibilities<>( graph, selection, focus, graph.getLock() );
 		index = graph.getIndex();
 		renderTransform = new AffineTransform3D();
-		setRenderSettings( CellRenderSettings.defaultStyle() );
+		setCellRenderSettings( CellRenderSettings.defaultStyle() );
 	}
 
 	@Override
@@ -134,7 +137,7 @@ public class CellOverlayGraphRenderer< V extends CellOverlayVertex< V, E >, E ex
 		renderTimepoint = timepoint;
 	}
 
-	public void setRenderSettings( final CellRenderSettings settings )
+	public void setCellRenderSettings( final CellRenderSettings settings )
 	{
 		this.settings = settings;
 	}
@@ -400,6 +403,8 @@ public class CellOverlayGraphRenderer< V extends CellOverlayVertex< V, E >, E ex
 		final BasicStroke defaultVertexStroke = new BasicStroke();
 		final BasicStroke defaultEdgeStroke = new BasicStroke();
 		final BasicStroke highlightedEdgeStroke = new BasicStroke( 3f );
+		final BasicStroke focusedEdgeStroke = new BasicStroke( 3f,
+				BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 0f, new float[] { 6f }, 0f );
 
 		final AffineTransform3D transform = getRenderTransformCopy();
 		final int currentTimepoint = renderTimepoint;
@@ -416,7 +421,7 @@ public class CellOverlayGraphRenderer< V extends CellOverlayVertex< V, E >, E ex
 		final V source = graph.vertexRef();
 		final V target = graph.vertexRef();
 
-		final int colorSpot = settings.getColorSpot();
+		final int colorSpot = settings.getCellColor();
 		final int colorPast = settings.getColorPast();
 		final int colorFuture = settings.getColorFuture();
 		final boolean useGradient = settings.getUseGradient();
@@ -487,8 +492,13 @@ public class CellOverlayGraphRenderer< V extends CellOverlayVertex< V, E >, E ex
 				} );
 			}
 
-			if ( settings.getDrawSpots() )
+			final boolean drawCellCenter = settings.getDrawCellCenter();
+			final boolean drawCellContour = settings.getDrawCellContour();
+			final boolean drawCells = settings.getDrawCells();
+			if ( drawCells && ( drawCellCenter || drawCellContour ) )
 			{
+				final boolean drawCellFilled = settings.getDrawCellFilled();
+				final boolean drawCellLabel = settings.getDrawCellLabel();
 
 				final V highlighted = highlight.getHighlightedVertex( ref1 );
 				final V focused = focus.getFocusedVertex( ref2 );
@@ -521,28 +531,73 @@ public class CellOverlayGraphRenderer< V extends CellOverlayVertex< V, E >, E ex
 							colorFuture,
 							color ) );
 
-					toPath( vertex,
-							transform,
-							path,
-							arr,
-							tmp,
-							pos,
-							vPos );
+					if ( drawCellContour )
+					{
+						toPath( vertex,
+								transform,
+								path,
+								arr,
+								tmp,
+								pos,
+								vPos );
 
-					if ( isFocused )
-						graphics.fill( path );
+						if ( isFocused )
+							graphics.setStroke( focusedEdgeStroke );
+						else if ( isHighlighted )
+							graphics.setStroke( highlightedEdgeStroke );
+
+						if ( drawCellFilled )
+						{
+							graphics.fill( path );
+							graphics.setColor( Color.BLACK );
+						}
+						graphics.draw( path );
+						if ( drawCellLabel )
+						{
+							final String str = vertex.getLabel();
+							final Rectangle2D bounds = graphics.getFontMetrics().getStringBounds( str, graphics );
+							graphics.drawString( str,
+									( float ) ( vPos[ 0 ] - bounds.getWidth() / 2. ),
+									( float ) ( vPos[ 1 ] - bounds.getHeight() / 2. ) );
+						}
+
+						if ( isHighlighted || isFocused )
+							graphics.setStroke( defaultVertexStroke );
+					}
 					else
 					{
-						if ( isHighlighted )
-							graphics.setStroke( highlightedEdgeStroke );
-						graphics.draw( path );
-						if ( isHighlighted )
-							graphics.setStroke( defaultVertexStroke );
+						// Draw cell center.
+						vertex.localize( pos );
+						transform.apply( pos, vPos );
+
+						final double x = vPos[ 0 ];
+						final double y = vPos[ 1 ];
+						double radius = pointRadius;
+						if ( isHighlighted || isFocused )
+							radius *= 2;
+						final int ox = ( int ) ( x - radius );
+						final int oy = ( int ) ( y - radius );
+						final int ow = ( int ) ( 2 * radius );
+						if ( isFocused )
+							graphics.fillRect( ox, oy, ow, ow );
+						else
+							graphics.fillOval( ox, oy, ow, ow );
+
+						if ( drawCellLabel )
+						{
+							final String str = vertex.getLabel();
+							final Rectangle2D bounds = graphics.getFontMetrics().getStringBounds( str, graphics );
+							graphics.drawString( str,
+									( float ) ( x + radius + 1. ),
+									( float ) ( y - bounds.getHeight() / 2. ) );
+						}
+
 					}
 				}
 			}
 		}
 		finally
+
 		{
 			graph.getLock().readLock().unlock();
 			index.readLock().unlock();
@@ -746,7 +801,7 @@ public class CellOverlayGraphRenderer< V extends CellOverlayVertex< V, E >, E ex
 	@Override
 	public V getVertexAt( final int x, final int y, final double tolerance, final V ref )
 	{
-		if ( !settings.getDrawSpots() )
+		if ( !settings.getDrawCells() )
 			return null;
 
 		final AffineTransform3D transform = getRenderTransformCopy();

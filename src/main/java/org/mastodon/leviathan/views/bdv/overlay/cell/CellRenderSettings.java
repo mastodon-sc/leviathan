@@ -43,28 +43,23 @@ public class CellRenderSettings implements Style< CellRenderSettings >
 	 */
 
 	public static final int DEFAULT_LIMIT_TIME_RANGE = 20;
-	public static final double DEFAULT_LIMIT_FOCUS_RANGE = 100.;
 	public static final boolean DEFAULT_USE_ANTI_ALIASING = true;
 	public static final boolean DEFAULT_USE_GRADIENT = false;
-	public static final boolean DEFAULT_DRAW_SPOTS = true;
+	public static final boolean DEFAULT_DRAW_CELLS = true;
 	public static final boolean DEFAULT_DRAW_LINKS = true;
 	public static final boolean DEFAULT_DRAW_LINKS_AHEAD_IN_TIME = false;
 	public static final boolean DEFAULT_DRAW_ARROW_HEADS = false;
-	public static final boolean DEFAULT_DRAW_ELLIPSE = true;
-	public static final boolean DEFAULT_DRAW_SLICE_INTERSECTION = true;
-	public static final boolean DEFAULT_DRAW_SLICE_PROJECTION = !DEFAULT_DRAW_SLICE_INTERSECTION;
-	public static final boolean DEFAULT_DRAW_POINTS = !DEFAULT_DRAW_ELLIPSE || (DEFAULT_DRAW_ELLIPSE && DEFAULT_DRAW_SLICE_INTERSECTION);
-	public static final boolean DEFAULT_DRAW_POINTS_FOR_ELLIPSE = false;
-	public static final boolean DEFAULT_DRAW_SPOT_LABELS = false;
-	public static final boolean DEFAULT_IS_FOCUS_LIMIT_RELATIVE = true;
-	public static final double DEFAULT_ELLIPSOID_FADE_DEPTH = 0.2;
-	public static final int DEFAULT_COLOR_SPOT_AND_PRESENT = Color.GREEN.getRGB();
+	public static final boolean DEFAULT_DRAW_CELL_CONTOUR = true;
+	public static final boolean DEFAULT_DRAW_CELL_FILLED = false;
+	public static final boolean DEFAULT_DRAW_CELL_CENTER = false;
+	public static final boolean DEFAULT_DRAW_CELL_LABELS = false;
+	public static final int DEFAULT_COLOR_CELL_AND_PRESENT = Color.GREEN.getRGB();
 	public static final int DEFAULT_COLOR_PAST = Color.RED.getRGB();
 	public static final int DEFAULT_COLOR_FUTURE = Color.BLUE.getRGB();
 
 	public interface UpdateListener
 	{
-		public void renderSettingsChanged();
+		public void cellRenderSettingsChanged();
 	}
 
 	private final Listeners.List< UpdateListener > updateListeners;
@@ -106,17 +101,12 @@ public class CellRenderSettings implements Style< CellRenderSettings >
 		drawLinks = settings.drawLinks;
 		drawLinksAheadInTime = settings.drawLinksAheadInTime;
 		drawArrowHeads = settings.drawArrowHeads;
-		drawSpots = settings.drawSpots;
-		drawEllipsoidSliceProjection = settings.drawEllipsoidSliceProjection;
-		drawEllipsoidSliceIntersection = settings.drawEllipsoidSliceIntersection;
-		drawPoints = settings.drawPoints;
-		drawPointsForEllipses = settings.drawPointsForEllipses;
-		drawSpotLabels = settings.drawSpotLabels;
-		focusLimit = settings.focusLimit;
-		isFocusLimitViewRelative = settings.isFocusLimitViewRelative;
-		ellipsoidFadeDepth = settings.ellipsoidFadeDepth;
-		pointFadeDepth = settings.pointFadeDepth;
-		colorSpot = settings.colorSpot;
+		drawCells = settings.drawCells;
+		drawCellContour = settings.drawCellContour;
+		drawCellFilled = settings.drawCellFilled;
+		drawCellCenter = settings.drawCellCenter;
+		drawCellLabel = settings.drawCellLabel;
+		cellColor = settings.cellColor;
 		colorPast = settings.colorPast;
 		colorFuture = settings.colorFuture;
 		notifyListeners();
@@ -125,7 +115,7 @@ public class CellRenderSettings implements Style< CellRenderSettings >
 	private void notifyListeners()
 	{
 		for ( final UpdateListener l : updateListeners.list )
-			l.renderSettingsChanged();
+			l.cellRenderSettingsChanged();
 	}
 
 	public Listeners< UpdateListener > updateListeners()
@@ -176,89 +166,34 @@ public class CellRenderSettings implements Style< CellRenderSettings >
 	private boolean drawArrowHeads;
 
 	/**
-	 * Whether to draw spots (at all).
+	 * Whether to draw cells (at all).
 	 */
-	private boolean drawSpots;
+	private boolean drawCells;
 
 	/**
-	 * Whether to draw the projections of spot ellipsoids onto the view plane.
+	 * Whether to draw cell contours.
 	 */
-	private boolean drawEllipsoidSliceProjection;
+	private boolean drawCellContour;
 
 	/**
-	 * Whether to draw the intersections of spot ellipsoids with the view plane.
+	 * Whether to draw cell filled.
 	 */
-	private boolean drawEllipsoidSliceIntersection;
+	private boolean drawCellFilled;
 
 	/**
-	 * Whether to draw spot centers.
+	 * Whether to draw cell centers.
 	 */
-	private boolean drawPoints;
+	private boolean drawCellCenter;
 
 	/**
-	 * Whether to draw spot centers also for those points that are visible as ellipses.
+	 * Whether to draw cell labels next to ellipses.
 	 */
-	private boolean drawPointsForEllipses;
+	private boolean drawCellLabel;
 
 	/**
-	 * Whether to draw spot labels next to ellipses.
+	 * The color used to paint cells and links in the current time-point.
 	 */
-	private boolean drawSpotLabels;
-
-	/**
-	 * Maximum distance from view plane up to which to draw spots.
-	 *
-	 * <p>
-	 * Depending on {@link #isFocusLimitViewRelative}, the distance is either in
-	 * the current view coordinate system or in the global coordinate system. If
-	 * {@code isFocusLimitViewRelative() == true} then the distance is in
-	 * current view coordinates. For example, a value of 100 means that spots
-	 * will be visible up to 100 pixel widths from the view plane. Thus, the
-	 * effective focus range depends on the current zoom level. If
-	 * {@code isFocusLimitViewRelative() == false} then the distance is in
-	 * global coordinates. A value of 100 means that spots will be visible up to
-	 * 100 units (of the global coordinate system) from the view plane.
-	 *
-	 * <p>
-	 * Ellipsoids are drawn increasingly translucent the closer they are to
-	 * {@link #focusLimit}. See {@link #ellipsoidFadeDepth}.
-	 */
-	private double focusLimit;
-
-	/**
-	 * Whether the {@link #focusLimit} is relative to the the current
-	 * view coordinate system.
-	 *
-	 * <p>
-	 * If {@code true} then the distance is in current view coordinates. For
-	 * example, a value of 100 means that spots will be visible up to 100 pixel
-	 * widths from the view plane. Thus, the effective focus range depends on
-	 * the current zoom level. If {@code false} then the distance is in global
-	 * coordinates. A value of 100 means that spots will be visible up to 100
-	 * units (of the global coordinate system) from the view plane.
-	 */
-	private boolean isFocusLimitViewRelative;
-
-	/**
-	 * The ratio of {@link #focusLimit} at which ellipsoids start to
-	 * fade. Ellipsoids are drawn increasingly translucent the closer they are
-	 * to {@link #focusLimit}. Up to ratio {@link #ellipsoidFadeDepth}
-	 * they are fully opaque, then their alpha value goes to 0 linearly.
-	 */
-	private double ellipsoidFadeDepth;
-
-	/**
-	 * The ratio of {@link #focusLimit} at which points start to
-	 * fade. Points are drawn increasingly translucent the closer they are
-	 * to {@link #focusLimit}. Up to ratio {@link #pointFadeDepth}
-	 * they are fully opaque, then their alpha value goes to 0 linearly.
-	 */
-	private double pointFadeDepth;
-
-	/**
-	 * The color used to paint spots and links in the current time-point.
-	 */
-	private int colorSpot;
+	private int cellColor;
 
 	/**
 	 * The color used to paint links in the past time-points.
@@ -459,359 +394,154 @@ public class CellRenderSettings implements Style< CellRenderSettings >
 	}
 
 	/**
-	 * Gets whether to draw spots (at all). For specific settings, see other
-	 * spot drawing settings.
+	 * Gets whether to draw cells (at all).
 	 *
-	 * @return {@code true} if spots are to be drawn.
-	 * @see #getDrawEllipsoidSliceIntersection()
-	 * @see #getDrawEllipsoidSliceProjection()
-	 * @see #getDrawSpotCenters()
-	 * @see #getDrawSpotCentersForEllipses()
-	 * @see #getDrawSpotLabels()
-	 * @see #getEllipsoidFadeDepth()
-	 * @see #getFocusLimit()
-	 * @see #getFocusLimitViewRelative()
-	 * @see #getPointFadeDepth()
+	 * @return {@code true} if cells are to be drawn.
 	 */
-	public boolean getDrawSpots()
+	public boolean getDrawCells()
 	{
-		return drawSpots;
+		return drawCells;
 	}
 
 	/**
-	 * Sets whether to draw spots (at all). For specific settings, see other
-	 * spot drawing settings.
+	 * Sets whether to draw cells (at all).
 	 *
-	 * @param drawSpots
-	 *            whether to draw spots.
-	 * @see #setDrawEllipsoidSliceIntersection(boolean)
-	 * @see #setDrawEllipsoidSliceProjection(boolean)
-	 * @see #setDrawSpotCenters(boolean)
-	 * @see #setDrawSpotCentersForEllipses(boolean)
-	 * @see #setDrawSpotLabels(boolean)
-	 * @see #setEllipsoidFadeDepth(double)
-	 * @see #setFocusLimit(double)
-	 * @see #setFocusLimitViewRelative(boolean)
-	 * @see #setPointFadeDepth(double)
+	 * @param drawCells
+	 *            whether to draw cells.
 	 */
-	public synchronized void setDrawSpots( final boolean drawSpots )
+	public synchronized void setDrawCells( final boolean drawCells )
 	{
-		if ( this.drawSpots != drawSpots )
+		if ( this.drawCells != drawCells )
 		{
-			this.drawSpots = drawSpots;
+			this.drawCells = drawCells;
 			notifyListeners();
 		}
 	}
 
 	/**
-	 * Get whether the projections of spot ellipsoids onto the view plane are
-	 * drawn.
+	 * Gets whether to draw cell contours.
 	 *
-	 * @return {@code true} iff projections of spot ellipsoids onto the view
-	 *         plane are drawn.
+	 * @return {@code true} if contours are to be drawn.
 	 */
-	public boolean getDrawEllipsoidSliceProjection()
+	public boolean getDrawCellContour()
 	{
-		return drawEllipsoidSliceProjection;
+		return drawCellContour;
 	}
 
 	/**
-	 * Set whether to draw the projections of spot ellipsoids onto the view
-	 * plane.
+	 * Sets whether to draw cell contours.
 	 *
-	 * @param drawEllipsoidSliceProjection
-	 *            whether to draw projections of spot ellipsoids onto the view
-	 *            plane.
+	 * @param drawCellContour
+	 *            whether to draw cell contours.
 	 */
-	public synchronized void setDrawEllipsoidSliceProjection( final boolean drawEllipsoidSliceProjection )
+	public synchronized void setDrawCellContour( final boolean drawCellContour )
 	{
-		if ( this.drawEllipsoidSliceProjection != drawEllipsoidSliceProjection )
+		if ( this.drawCellContour != drawCellContour )
 		{
-			this.drawEllipsoidSliceProjection = drawEllipsoidSliceProjection;
+			this.drawCellContour = drawCellContour;
 			notifyListeners();
 		}
 	}
 
 	/**
-	 * Get whether the intersections of spot ellipsoids with the view plane are
-	 * drawn.
+	 * Gets whether to draw cell filled.
 	 *
-	 * @return {@code true} iff intersections of spot ellipsoids with the view
-	 *         plane are drawn.
+	 * @return {@code true} if cells are to be drawn filled.
 	 */
-	public boolean getDrawEllipsoidSliceIntersection()
+	public boolean getDrawCellFilled()
 	{
-		return drawEllipsoidSliceIntersection;
+		return drawCellFilled;
 	}
 
 	/**
-	 * Set whether to draw the intersections of spot ellipsoids with the view
-	 * plane.
+	 * Sets whether to draw cell filled.
 	 *
-	 * @param drawEllipsoidSliceIntersection
-	 *            whether to draw intersections of spot ellipsoids with the view
-	 *            plane.
+	 * @param drawCellFilled
+	 *            whether to draw cell filled.
 	 */
-	public synchronized void setDrawEllipsoidSliceIntersection( final boolean drawEllipsoidSliceIntersection )
+	public synchronized void setDrawCellFilled( final boolean drawCellFilled )
 	{
-		if ( this.drawEllipsoidSliceIntersection != drawEllipsoidSliceIntersection )
+		if ( this.drawCellFilled != drawCellFilled )
 		{
-			this.drawEllipsoidSliceIntersection = drawEllipsoidSliceIntersection;
+			this.drawCellFilled = drawCellFilled;
 			notifyListeners();
 		}
 	}
 
 	/**
-	 * Get whether spot centers are drawn.
-	 * <p>
-	 * Note that spot centers are usually only drawn, if no ellipse for the spot
-	 * was drawn (unless {@link #getDrawSpotCentersForEllipses()}
-	 * {@code == true}).
+	 * Gets whether cell centers are drawn.
 	 *
-	 * @return whether spot centers are drawn.
+	 * @return whether cell centers are drawn.
 	 */
-	public boolean getDrawSpotCenters()
+	public boolean getDrawCellCenter()
 	{
-		return drawPoints;
+		return drawCellCenter;
 	}
 
 	/**
-	 * Set whether spot centers are drawn.
-	 * <p>
-	 * Note that spot centers are usually only drawn, if no ellipse for the spot
-	 * was drawn (unless {@link #getDrawSpotCentersForEllipses()}
-	 * {@code == true}).
+	 * Sets whether cell centers are drawn.
 	 *
-	 * @param drawPoints
-	 *            whether spot centers are drawn.
+	 * @param drawCellCenter
+	 *            whether cell centers are drawn.
 	 */
-	public synchronized void setDrawSpotCenters( final boolean drawPoints )
+	public synchronized void setDrawCellCenter( final boolean drawCellCenter )
 	{
-		if ( this.drawPoints != drawPoints )
+		if ( this.drawCellCenter != drawCellCenter )
 		{
-			this.drawPoints = drawPoints;
+			this.drawCellCenter = drawCellCenter;
 			notifyListeners();
 		}
 	}
 
 	/**
-	 * Get whether spot centers are also drawn for those points that are visible
-	 * as ellipses. See {@link #getDrawSpotCenters()}.
+	 * Gets whether cell labels are drawn.
 	 *
-	 * @return whether spot centers are also drawn for those points that are
-	 *         visible as ellipses.
+	 * @return whether cell labels are drawn.
 	 */
-	public boolean getDrawSpotCentersForEllipses()
+	public boolean getDrawCellLabel()
 	{
-		return drawPointsForEllipses;
+		return drawCellLabel;
 	}
 
 	/**
-	 * Set whether spot centers are also drawn for those points that are visible
-	 * as ellipses.
+	 * Sets whether cell labels are drawn.
 	 *
-	 * @param drawPointsForEllipses
-	 *            whether spot centers are also drawn for those points that are
-	 *            visible as ellipses.
+	 * @param drawCellLabel
+	 *            whether cell labels.
 	 */
-	public synchronized void setDrawSpotCentersForEllipses( final boolean drawPointsForEllipses )
+	public synchronized void setDrawCellLabel( final boolean drawCellLabel )
 	{
-		if ( this.drawPointsForEllipses != drawPointsForEllipses )
+		if ( this.drawCellLabel != drawCellLabel )
 		{
-			this.drawPointsForEllipses = drawPointsForEllipses;
+			this.drawCellLabel = drawCellLabel;
 			notifyListeners();
 		}
 	}
 
 	/**
-	 * Get whether spot labels are drawn next to ellipses.
-	 *
-	 * @return whether spot labels are drawn next to ellipses.
-	 */
-	public boolean getDrawSpotLabels()
-	{
-		return drawSpotLabels;
-	}
-
-	/**
-	 * Set whether spot labels are drawn next to ellipses.
-	 *
-	 * @param drawSpotLabels
-	 *            whether spot labels are drawn next to ellipses.
-	 */
-	public void setDrawSpotLabels( final boolean drawSpotLabels )
-	{
-		if ( this.drawSpotLabels != drawSpotLabels )
-		{
-			this.drawSpotLabels = drawSpotLabels;
-			notifyListeners();
-		}
-	}
-
-	/**
-	 * Get the maximum distance from the view plane up to which to spots are
-	 * drawn.
-	 * <p>
-	 * Depending on {@link #getFocusLimitViewRelative()}, the distance is either
-	 * in the current view coordinate system or in the global coordinate system.
-	 * If {@code getFocusLimitViewRelative() == true} then the distance is in
-	 * current view coordinates. For example, a value of 100 means that spots
-	 * will be visible up to 100 pixel widths from the view plane. Thus, the
-	 * effective focus range depends on the current zoom level. If
-	 * {@code getFocusLimitViewRelative() == false} then the distance is in
-	 * global coordinates. A value of 100 means that spots will be visible up to
-	 * 100 units (of the global coordinate system) from the view plane.
-	 * <p>
-	 * Ellipsoids are drawn increasingly translucent the closer they are to the
-	 * {@code focusLimit}. See {@link #getEllipsoidFadeDepth()}.
-	 *
-	 * @return the maximum distance from the view plane up to which to spots are
-	 *         drawn.
-	 */
-	public double getFocusLimit()
-	{
-		return focusLimit;
-	}
-
-	/**
-	 * Set the maximum distance from the view plane up to which to spots are
-	 * drawn. See {@link #getFocusLimit()}.
-	 *
-	 * @param focusLimit
-	 *            the maximum distance from the view plane up to which to spots
-	 *            are drawn.
-	 */
-	public synchronized void setFocusLimit( final double focusLimit )
-	{
-		if ( this.focusLimit != focusLimit )
-		{
-			this.focusLimit = focusLimit;
-			notifyListeners();
-		}
-	}
-
-	/**
-	 * Set whether the {@link #getFocusLimit()} is relative to the the current
-	 * view coordinate system.
-	 * <p>
-	 * If {@code true} then the distance is in current view coordinates. For
-	 * example, a value of 100 means that spots will be visible up to 100 pixel
-	 * widths from the view plane. Thus, the effective focus range depends on
-	 * the current zoom level. If {@code false} then the distance is in global
-	 * coordinates. A value of 100 means that spots will be visible up to 100
-	 * units (of the global coordinate system) from the view plane.
-	 *
-	 * @return {@code true} iff the {@link #getFocusLimit()} is relative to the
-	 *         the current view coordinate system.
-	 */
-	public boolean getFocusLimitViewRelative()
-	{
-		return isFocusLimitViewRelative;
-	}
-
-	/**
-	 * Set whether the {@link #getFocusLimit()} is relative to the the current
-	 * view coordinate system. See {@link #getFocusLimitViewRelative()}.
-	 *
-	 * @param isFocusLimitViewRelative
-	 *            whether the {@link #getFocusLimit()} is relative to the the
-	 *            current view coordinate system.
-	 */
-	public synchronized void setFocusLimitViewRelative( final boolean isFocusLimitViewRelative )
-	{
-		if ( this.isFocusLimitViewRelative != isFocusLimitViewRelative )
-		{
-			this.isFocusLimitViewRelative = isFocusLimitViewRelative;
-			notifyListeners();
-		}
-	}
-
-	/**
-	 * Get the ratio of {@link #getFocusLimit()} at which ellipsoids start to
-	 * fade. Ellipsoids are drawn increasingly translucent the closer they are
-	 * to {@link #getFocusLimit()}. Up to ratio {@link #getEllipsoidFadeDepth()}
-	 * they are fully opaque, then their alpha value goes to 0 linearly.
-	 *
-	 * @return the ratio of {@link #getFocusLimit()} at which ellipsoids start
-	 *         to fade.
-	 */
-	public double getEllipsoidFadeDepth()
-	{
-		return ellipsoidFadeDepth;
-	}
-
-	/**
-	 * Set the ratio of {@link #getFocusLimit()} at which ellipsoids start to
-	 * fade. See {@link #getEllipsoidFadeDepth()}.
-	 *
-	 * @param ellipsoidFadeDepth
-	 *            the ratio of {@link #getFocusLimit()} at which ellipsoids
-	 *            start to fade.
-	 */
-	public synchronized void setEllipsoidFadeDepth( final double ellipsoidFadeDepth )
-	{
-		if ( this.ellipsoidFadeDepth != ellipsoidFadeDepth )
-		{
-			this.ellipsoidFadeDepth = ellipsoidFadeDepth;
-			notifyListeners();
-		}
-	}
-
-	/**
-	 * The ratio of {@link #getFocusLimit()} at which points start to fade.
-	 * Points are drawn increasingly translucent the closer they are to
-	 * {@link #getFocusLimit()}. Up to ratio {@link #getPointFadeDepth} they are
-	 * fully opaque, then their alpha value goes to 0 linearly.
-	 *
-	 * @return the ratio of {@link #getFocusLimit()} at which points start to
-	 *         fade.
-	 */
-	public double getPointFadeDepth()
-	{
-		return pointFadeDepth;
-	}
-
-	/**
-	 * Set the ratio of {@link #getFocusLimit()} at which points start to fade.
-	 * See {@link #getPointFadeDepth()}.
-	 *
-	 * @param pointFadeDepth
-	 *            the ratio of {@link #getFocusLimit()} at which points start to
-	 *            fade.
-	 */
-	public synchronized void setPointFadeDepth( final double pointFadeDepth )
-	{
-		if ( this.pointFadeDepth != pointFadeDepth )
-		{
-			this.pointFadeDepth = pointFadeDepth;
-			notifyListeners();
-		}
-	}
-
-	/**
-	 * Returns the color used to paint spots and links in the current
+	 * Returns the color used to paint cells and links in the current
 	 * time-point.
 	 * 
-	 * @return the color used to paint spots and links in the current
+	 * @return the color used to paint cells and links in the current
 	 *         time-point.
 	 */
-	public int getColorSpot()
+	public int getCellColor()
 	{
-		return colorSpot;
+		return cellColor;
 	}
 
 	/**
-	 * Sets the color used to paint spots and links in the current time-point.
+	 * Sets the color used to paint cells and links in the current time-point.
 	 * 
-	 * @param colorSpot
-	 *            the color used to paint spots and links in the current
+	 * @param cellColor
+	 *            the color used to paint cells and links in the current
 	 *            time-point.
 	 */
-	public synchronized void setColorSpot( final int colorSpot )
+	public synchronized void setCellColor( final int cellColor )
 	{
-		if ( this.colorSpot != colorSpot )
+		if ( this.cellColor != cellColor )
 		{
-			this.colorSpot = colorSpot;
+			this.cellColor = cellColor;
 			notifyListeners();
 		}
 	}
@@ -880,28 +610,25 @@ public class CellRenderSettings implements Style< CellRenderSettings >
 		df.drawLinks = DEFAULT_DRAW_LINKS;
 		df.drawLinksAheadInTime = DEFAULT_DRAW_LINKS_AHEAD_IN_TIME;
 		df.drawArrowHeads = DEFAULT_DRAW_ARROW_HEADS;
-		df.drawSpots = DEFAULT_DRAW_SPOTS;
-		df.drawEllipsoidSliceProjection = DEFAULT_DRAW_SLICE_PROJECTION;
-		df.drawEllipsoidSliceIntersection = DEFAULT_DRAW_SLICE_INTERSECTION;
-		df.drawPoints = DEFAULT_DRAW_POINTS;
-		df.drawPointsForEllipses = DEFAULT_DRAW_POINTS_FOR_ELLIPSE;
-		df.drawSpotLabels = DEFAULT_DRAW_SPOT_LABELS;
-		df.focusLimit = DEFAULT_LIMIT_FOCUS_RANGE;
-		df.isFocusLimitViewRelative = DEFAULT_IS_FOCUS_LIMIT_RELATIVE;
-		df.ellipsoidFadeDepth = DEFAULT_ELLIPSOID_FADE_DEPTH;
-		df.colorSpot = DEFAULT_COLOR_SPOT_AND_PRESENT;
+		df.drawCells = DEFAULT_DRAW_CELLS;
+		df.drawCellContour = DEFAULT_DRAW_CELL_CONTOUR;
+		df.drawCellFilled = DEFAULT_DRAW_CELL_FILLED;
+		df.drawCellCenter = DEFAULT_DRAW_CELL_CENTER;
+		df.drawCellLabel = DEFAULT_DRAW_CELL_LABELS;
+		df.cellColor = DEFAULT_COLOR_CELL_AND_PRESENT;
 		df.colorPast = DEFAULT_COLOR_PAST;
 		df.colorFuture = DEFAULT_COLOR_FUTURE;
 		df.name = "Default";
 	}
 
-	private static final CellRenderSettings POINT_CLOUD;
+	private static final CellRenderSettings CELL_CENTER;
 	static
 	{
-		POINT_CLOUD = df.copy( "Point cloud" );
-		POINT_CLOUD.drawLinks = false;
-		POINT_CLOUD.drawEllipsoidSliceIntersection = false;
-		POINT_CLOUD.isFocusLimitViewRelative = false;
+		CELL_CENTER = df.copy( "Cell center" );
+		CELL_CENTER.drawLinks = false;
+		CELL_CENTER.drawCellContour = false;
+		CELL_CENTER.drawCellCenter = true;
+		CELL_CENTER.drawCellLabel = true;
 	}
 
 	private static final CellRenderSettings NONE;
@@ -909,15 +636,15 @@ public class CellRenderSettings implements Style< CellRenderSettings >
 	{
 		NONE = df.copy( "No overlay" );
 		NONE.drawLinks = false;
-		NONE.drawSpots = false;
+		NONE.drawCells = false;
 	}
 
 	public static final Collection< CellRenderSettings > defaults;
 	static
 	{
-		defaults = new ArrayList<>( 4 );
+		defaults = new ArrayList<>( 3 );
 		defaults.add( df );
-		defaults.add( POINT_CLOUD );
+		defaults.add( CELL_CENTER );
 		defaults.add( NONE );
 	}
 
