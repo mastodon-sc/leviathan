@@ -5,6 +5,8 @@ import org.mastodon.leviathan.algorithms.MaskImporter;
 import org.mastodon.leviathan.app.LeviathanCellAppModel;
 import org.mastodon.leviathan.app.LeviathanJunctionAppModel;
 import org.mastodon.leviathan.app.LeviathanKeyConfigContexts;
+import org.mastodon.leviathan.app.LeviathanMainWindow;
+import org.mastodon.leviathan.app.LeviathanWM;
 import org.mastodon.leviathan.model.cell.Cell;
 import org.mastodon.leviathan.model.cell.CellGraph;
 import org.mastodon.leviathan.model.cell.CellModel;
@@ -13,12 +15,11 @@ import org.mastodon.leviathan.model.junction.JunctionGraph;
 import org.mastodon.leviathan.model.junction.JunctionModel;
 import org.mastodon.leviathan.model.junction.MembranePart;
 import org.mastodon.leviathan.plugin.LeviathanPlugins;
-import org.mastodon.leviathan.views.bdv.LeviathanCellViewBdv;
-import org.mastodon.leviathan.views.bdv.LeviathanJunctionViewBdv;
 import org.mastodon.ui.coloring.feature.FeatureColorModeManager;
 import org.mastodon.ui.keymap.Keymap;
 import org.mastodon.ui.keymap.KeymapManager;
 import org.mastodon.views.bdv.SharedBigDataViewerData;
+import org.scijava.Context;
 import org.scijava.ui.behaviour.KeyPressedManager;
 import org.scijava.ui.behaviour.util.Actions;
 
@@ -74,7 +75,6 @@ public class ImportMaskExample
 						keymapManager,
 						plugins,
 						globalAppActions );
-		new LeviathanJunctionViewBdv( junctionAppModel );
 
 		/*
 		 * Cell graph.
@@ -92,7 +92,10 @@ public class ImportMaskExample
 				keymapManager,
 				plugins,
 				globalAppActions );
-		new LeviathanCellViewBdv( cellAppModel );
+
+		final LeviathanWM wm = new LeviathanWM( new Context() );
+		wm.setAppModels( cellAppModel, junctionAppModel );
+		new LeviathanMainWindow( wm ).setVisible( true );
 	}
 
 	public static void printCellGraph( final JunctionGraph junctionGraph, final CellGraph cellGraph )
