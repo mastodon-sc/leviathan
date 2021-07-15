@@ -59,4 +59,8 @@ public interface CellOverlayProperties< V, E >
 	public void removeVertex( V v );
 
 	public void notifyGraphChanged();
+
+	public String getLabel( V wv );
+
+	public void setLabel( V wv, String label );
 }

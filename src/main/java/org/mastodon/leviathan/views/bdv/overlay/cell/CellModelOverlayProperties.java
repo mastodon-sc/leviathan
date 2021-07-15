@@ -35,11 +35,11 @@ import org.mastodon.leviathan.views.bdv.overlay.cell.wrap.CellOverlayProperties;
 
 public class CellModelOverlayProperties implements CellOverlayProperties< Cell, Link >
 {
-	private final CellGraph modelGraph;
+	private final CellGraph cellGraph;
 
-	public CellModelOverlayProperties( final CellGraph modelGraph )
+	public CellModelOverlayProperties( final CellGraph cellGraph )
 	{
-		this.modelGraph = modelGraph;
+		this.cellGraph = cellGraph;
 	}
 
 	@Override
@@ -75,19 +75,19 @@ public class CellModelOverlayProperties implements CellOverlayProperties< Cell, 
 	@Override
 	public Cell addVertex( final Cell ref )
 	{
-		return modelGraph.addVertex( ref );
+		return cellGraph.addVertex( ref );
 	}
 
 	@Override
 	public Link addEdge( final Cell source, final Cell target, final Link ref )
 	{
-		return modelGraph.addEdge( source, target, ref );
+		return cellGraph.addEdge( source, target, ref );
 	}
 
 	@Override
 	public Link insertEdge( final Cell source, final int sourceOutIndex, final Cell target, final int targetInIndex, final Link ref )
 	{
-		return modelGraph.insertEdge( source, sourceOutIndex, target, targetInIndex, ref );
+		return cellGraph.insertEdge( source, sourceOutIndex, target, targetInIndex, ref );
 	}
 
 	@Override
@@ -99,19 +99,19 @@ public class CellModelOverlayProperties implements CellOverlayProperties< Cell, 
 	@Override
 	public void removeEdge( final Link e )
 	{
-		modelGraph.remove( e );
+		cellGraph.remove( e );
 	}
 
 	@Override
 	public void removeVertex( final Cell v )
 	{
-		modelGraph.remove( v );
+		cellGraph.remove( v );
 	}
 
 	@Override
 	public void notifyGraphChanged()
 	{
-		modelGraph.notifyGraphChanged();
+		cellGraph.notifyGraphChanged();
 	}
 
 	@Override
@@ -130,5 +130,17 @@ public class CellModelOverlayProperties implements CellOverlayProperties< Cell, 
 	public double[] getBoundary( final Cell v )
 	{
 		return v.getBoundary();
+	}
+
+	@Override
+	public String getLabel( final Cell v )
+	{
+		return v.getLabel();
+	}
+
+	@Override
+	public void setLabel( final Cell v, final String label )
+	{
+		v.setLabel( label );
 	}
 }

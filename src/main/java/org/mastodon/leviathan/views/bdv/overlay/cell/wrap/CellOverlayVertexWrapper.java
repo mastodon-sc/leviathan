@@ -393,4 +393,16 @@ public class CellOverlayVertexWrapper< V extends Vertex< E >, E extends Edge< V 
 	{
 		return overlayProperties.getBoundary( wv );
 	}
+
+	@Override
+	public String getLabel()
+	{
+		return overlayProperties.getLabel( wv );
+	}
+
+	@Override
+	public void setLabel( final String label )
+	{
+		overlayProperties.setLabel( wv, label );
+	}
 }

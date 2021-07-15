@@ -29,6 +29,7 @@
 package org.mastodon.leviathan.views.bdv.overlay.cell;
 
 import org.mastodon.Ref;
+import org.mastodon.model.HasLabel;
 import org.mastodon.spatial.HasTimepoint;
 import org.mastodon.views.bdv.overlay.OverlayVertex;
 
@@ -36,7 +37,7 @@ import net.imglib2.RealLocalizable;
 import net.imglib2.RealPositionable;
 
 public interface CellOverlayVertex< O extends CellOverlayVertex< O, E >, E extends CellOverlayEdge< E, ? > >
-		extends OverlayVertex< O, E >, Ref< O >, RealLocalizable, RealPositionable, HasTimepoint
+		extends OverlayVertex< O, E >, Ref< O >, RealLocalizable, RealPositionable, HasTimepoint, HasLabel
 {
 
 	public O init( final int timepoint, final double[] position );
