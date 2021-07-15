@@ -1,4 +1,4 @@
-package org.mastodon.leviathan.model;
+package org.mastodon.leviathan.model.cell;
 
 import org.mastodon.graph.ref.AbstractListenableEdge;
 import org.mastodon.pool.ByteMappedElement;

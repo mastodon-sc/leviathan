@@ -3,11 +3,11 @@ package org.mastodon.leviathan.algorithms;
 import org.mastodon.collection.RefCollections;
 import org.mastodon.collection.RefList;
 import org.mastodon.leviathan.algorithms.FaceIteratorGen.FaceIterator;
-import org.mastodon.leviathan.model.Cell;
-import org.mastodon.leviathan.model.CellGraph;
-import org.mastodon.leviathan.model.Junction;
-import org.mastodon.leviathan.model.JunctionGraph;
-import org.mastodon.leviathan.model.MembranePart;
+import org.mastodon.leviathan.model.cell.Cell;
+import org.mastodon.leviathan.model.cell.CellGraph;
+import org.mastodon.leviathan.model.junction.Junction;
+import org.mastodon.leviathan.model.junction.JunctionGraph;
+import org.mastodon.leviathan.model.junction.MembranePart;
 
 public class FindFaces
 {

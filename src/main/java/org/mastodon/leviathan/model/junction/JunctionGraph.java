@@ -1,4 +1,4 @@
-package org.mastodon.leviathan.model;
+package org.mastodon.leviathan.model.junction;
 
 import org.mastodon.graph.GraphIdBimap;
 import org.mastodon.io.properties.ObjPropertyMapSerializer;

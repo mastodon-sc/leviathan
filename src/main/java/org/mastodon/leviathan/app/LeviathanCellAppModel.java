@@ -29,10 +29,10 @@
 package org.mastodon.leviathan.app;
 
 import org.mastodon.app.MastodonAppModel;
-import org.mastodon.leviathan.model.Cell;
-import org.mastodon.leviathan.model.CellModel;
-import org.mastodon.leviathan.model.JunctionModel;
-import org.mastodon.leviathan.model.Link;
+import org.mastodon.leviathan.model.cell.Cell;
+import org.mastodon.leviathan.model.cell.CellModel;
+import org.mastodon.leviathan.model.cell.Link;
+import org.mastodon.leviathan.model.junction.JunctionModel;
 import org.mastodon.leviathan.plugin.LeviathanPlugins;
 import org.mastodon.ui.coloring.feature.FeatureColorModeManager;
 import org.mastodon.ui.keymap.KeymapManager;

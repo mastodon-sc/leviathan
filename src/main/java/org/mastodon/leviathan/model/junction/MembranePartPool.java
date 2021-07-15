@@ -1,4 +1,4 @@
-package org.mastodon.leviathan.model;
+package org.mastodon.leviathan.model.junction;
 
 import org.mastodon.graph.ref.AbstractListenableEdgePool;
 import org.mastodon.pool.ByteMappedElement;

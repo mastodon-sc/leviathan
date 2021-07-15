@@ -1,4 +1,4 @@
-package org.mastodon.leviathan.model;
+package org.mastodon.leviathan.model.cell;
 
 import org.mastodon.model.AbstractSpotPool;
 import org.mastodon.pool.ByteMappedElement;

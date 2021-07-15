@@ -28,9 +28,9 @@
  */
 package org.mastodon.leviathan.views.bdv.overlay.junction;
 
-import org.mastodon.leviathan.model.Junction;
-import org.mastodon.leviathan.model.JunctionGraph;
-import org.mastodon.leviathan.model.MembranePart;
+import org.mastodon.leviathan.model.junction.Junction;
+import org.mastodon.leviathan.model.junction.JunctionGraph;
+import org.mastodon.leviathan.model.junction.MembranePart;
 import org.mastodon.leviathan.views.bdv.overlay.junction.wrap.JunctionOverlayProperties;
 
 public class JunctionModelOverlayProperties implements JunctionOverlayProperties< Junction, MembranePart >

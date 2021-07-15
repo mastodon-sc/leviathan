@@ -29,9 +29,9 @@
 package org.mastodon.leviathan.app;
 
 import org.mastodon.app.MastodonAppModel;
-import org.mastodon.leviathan.model.Junction;
-import org.mastodon.leviathan.model.JunctionModel;
-import org.mastodon.leviathan.model.MembranePart;
+import org.mastodon.leviathan.model.junction.Junction;
+import org.mastodon.leviathan.model.junction.JunctionModel;
+import org.mastodon.leviathan.model.junction.MembranePart;
 import org.mastodon.leviathan.plugin.LeviathanPlugins;
 import org.mastodon.ui.coloring.feature.FeatureColorModeManager;
 import org.mastodon.ui.keymap.KeymapManager;

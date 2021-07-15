@@ -3,9 +3,9 @@ package org.mastodon.leviathan.algorithms;
 import java.util.Iterator;
 
 import org.mastodon.graph.ref.AllEdges;
-import org.mastodon.leviathan.model.Junction;
-import org.mastodon.leviathan.model.JunctionGraph;
-import org.mastodon.leviathan.model.MembranePart;
+import org.mastodon.leviathan.model.junction.Junction;
+import org.mastodon.leviathan.model.junction.JunctionGraph;
+import org.mastodon.leviathan.model.junction.MembranePart;
 
 public class FaceIteratorGen
 {

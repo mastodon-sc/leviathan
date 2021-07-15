@@ -5,9 +5,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.mastodon.leviathan.model.Junction;
-import org.mastodon.leviathan.model.JunctionGraph;
-import org.mastodon.leviathan.model.MembranePart;
+import org.mastodon.leviathan.model.junction.Junction;
+import org.mastodon.leviathan.model.junction.JunctionGraph;
+import org.mastodon.leviathan.model.junction.MembranePart;
 import org.scijava.util.DoubleArray;
 
 import net.imglib2.Cursor;

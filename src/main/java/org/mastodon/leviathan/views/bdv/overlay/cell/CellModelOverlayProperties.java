@@ -28,9 +28,9 @@
  */
 package org.mastodon.leviathan.views.bdv.overlay.cell;
 
-import org.mastodon.leviathan.model.Cell;
-import org.mastodon.leviathan.model.CellGraph;
-import org.mastodon.leviathan.model.Link;
+import org.mastodon.leviathan.model.cell.Cell;
+import org.mastodon.leviathan.model.cell.CellGraph;
+import org.mastodon.leviathan.model.cell.Link;
 import org.mastodon.leviathan.views.bdv.overlay.cell.wrap.CellOverlayProperties;
 
 public class CellModelOverlayProperties implements CellOverlayProperties< Cell, Link >

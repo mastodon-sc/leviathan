@@ -26,69 +26,69 @@
  * POSSIBILITY OF SUCH DAMAGE.
  * #L%
  */
-package org.mastodon.leviathan.model;
+package org.mastodon.leviathan.model.cell;
 
 import org.mastodon.graph.io.GraphSerializer;
 import org.mastodon.graph.ref.AbstractEdgePool;
 import org.mastodon.graph.ref.AbstractVertexPool;
 import org.mastodon.pool.PoolObjectAttributeSerializer;
 
-class JunctionModelSerializer implements GraphSerializer< Junction, MembranePart >
+class CellModelSerializer implements GraphSerializer< Cell, Link >
 {
-	private JunctionModelSerializer()
+	private CellModelSerializer()
 	{}
 
-	private static JunctionModelSerializer instance = new JunctionModelSerializer();
+	private static CellModelSerializer instance = new CellModelSerializer();
 
-	public static JunctionModelSerializer getInstance()
+	public static CellModelSerializer getInstance()
 	{
 		return instance;
 	}
 
-	private final JunctionSerializer vertexSerializer = new JunctionSerializer();
+	private final CellSerializer vertexSerializer = new CellSerializer();
 
-	private final MembranePartSerializer edgeSerializer = new MembranePartSerializer();
+	private final LinkSerializer edgeSerializer = new LinkSerializer();
 
 	@Override
-	public JunctionSerializer getVertexSerializer()
+	public CellSerializer getVertexSerializer()
 	{
 		return vertexSerializer;
 	}
 
 	@Override
-	public MembranePartSerializer getEdgeSerializer()
+	public LinkSerializer getEdgeSerializer()
 	{
 		return edgeSerializer;
 	}
 
 
-	static class JunctionSerializer extends PoolObjectAttributeSerializer< Junction >
+	static class CellSerializer extends PoolObjectAttributeSerializer< Cell >
 	{
-		public JunctionSerializer()
+		public CellSerializer()
 		{
 			super(
 					AbstractVertexPool.layout.getSizeInBytes(),
-					JunctionPool.layout.getSizeInBytes() - AbstractVertexPool.layout.getSizeInBytes() );
+					CellPool.layout.getSizeInBytes() - AbstractVertexPool.layout.getSizeInBytes() );
 		}
 
 		@Override
-		public void notifySet( final Junction vertex )
+		public void notifySet( final Cell vertex )
 		{
 			vertex.notifyVertexAdded();
 		}
 	}
 
-	static class MembranePartSerializer extends PoolObjectAttributeSerializer< MembranePart >
+	static class LinkSerializer extends PoolObjectAttributeSerializer< Link >
 	{
-		public MembranePartSerializer()
+		public LinkSerializer()
 		{
 			super(
 					AbstractEdgePool.layout.getSizeInBytes(),
-					MembranePartPool.layout.getSizeInBytes() - AbstractEdgePool.layout.getSizeInBytes() );
+					LinkPool.layout.getSizeInBytes() - AbstractEdgePool.layout.getSizeInBytes() );
 		}
 
 		@Override
-		public void notifySet( final MembranePart edge )
+		public void notifySet( final Link edge )
 		{
 			edge.notifyEdgeAdded();
 		}
