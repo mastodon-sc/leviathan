@@ -53,7 +53,7 @@ public class CellPool extends AbstractSpotPool< Cell, Link, ByteMappedElement, C
 		return membranes;
 	}
 
-	public ObjPropertyMap< Cell, double[] > boundary()
+	public ObjPropertyMap< Cell, double[] > boundaryProperty()
 	{
 		return boundary;
 	}
