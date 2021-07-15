@@ -54,6 +54,8 @@ import org.mastodon.leviathan.plugin.LeviathanPluginAppModel;
 import org.mastodon.leviathan.plugin.LeviathanPlugins;
 import org.mastodon.leviathan.views.bdv.LeviathanCellViewBdv;
 import org.mastodon.leviathan.views.bdv.LeviathanJunctionViewBdv;
+import org.mastodon.leviathan.views.bdv.overlay.cell.ui.CellRenderSettingsConfigPage;
+import org.mastodon.leviathan.views.bdv.overlay.cell.ui.CellRenderSettingsManager;
 import org.mastodon.leviathan.views.table.LeviathanCellViewTable;
 import org.mastodon.mamut.PreferencesDialog;
 import org.mastodon.model.tag.ui.TagSetDialog;
@@ -67,8 +69,6 @@ import org.mastodon.ui.keymap.Keymap;
 import org.mastodon.ui.keymap.KeymapManager;
 import org.mastodon.ui.keymap.KeymapSettingsPage;
 import org.mastodon.util.ToggleDialogAction;
-import org.mastodon.views.bdv.overlay.ui.RenderSettingsConfigPage;
-import org.mastodon.views.bdv.overlay.ui.RenderSettingsManager;
 import org.scijava.Context;
 import org.scijava.InstantiableException;
 import org.scijava.plugin.Plugin;
@@ -139,7 +139,7 @@ public class LeviathanWM
 
 	private final KeyPressedManager keyPressedManager;
 
-	private final RenderSettingsManager renderSettingsManager;
+	private final CellRenderSettingsManager cellRenderSettingsManager;
 
 	private final FeatureColorModeManager featureColorModeManager;
 
@@ -174,7 +174,7 @@ public class LeviathanWM
 		this.context = context;
 
 		keyPressedManager = new KeyPressedManager();
-		renderSettingsManager = new RenderSettingsManager();
+		cellRenderSettingsManager = new CellRenderSettingsManager();
 		featureColorModeManager = new FeatureColorModeManager();
 		featureProjectionsManager = new LeviathanCellFeatureProjectionsManager(
 				context.getService( FeatureSpecsService.class ),
@@ -213,7 +213,7 @@ public class LeviathanWM
 		globalAppActions.namedAction( featureComputationAction, COMPUTE_FEATURE_DIALOG_KEYS );
 
 		final PreferencesDialog settings = new PreferencesDialog( null, keymap, new String[] { KeyConfigContexts.MASTODON } );
-		settings.addPage( new RenderSettingsConfigPage( "BDV Render Settings", renderSettingsManager ) );
+		settings.addPage( new CellRenderSettingsConfigPage( "Cell BDV Render Settings", cellRenderSettingsManager ) );
 		settings.addPage( new KeymapSettingsPage( "Keymap", keymapManager, descriptions ) );
 		settings.addPage( new FeatureColorModeConfigPage( "Feature Color Modes", featureColorModeManager, featureProjectionsManager ) );
 
@@ -415,9 +415,9 @@ public class LeviathanWM
 		return keyPressedManager;
 	}
 
-	RenderSettingsManager getRenderSettingsManager()
+	CellRenderSettingsManager getRenderSettingsManager()
 	{
-		return renderSettingsManager;
+		return cellRenderSettingsManager;
 	}
 
 	FeatureColorModeManager getFeatureColorModeManager()
