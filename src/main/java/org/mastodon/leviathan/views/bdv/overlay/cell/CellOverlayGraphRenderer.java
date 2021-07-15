@@ -42,7 +42,7 @@ import org.mastodon.collection.RefList;
 import org.mastodon.kdtree.ClipConvexPolytope;
 import org.mastodon.leviathan.model.Junction;
 import org.mastodon.leviathan.model.MembranePart;
-import org.mastodon.leviathan.views.bdv.overlay.junction.DouglasPeucker;
+import org.mastodon.leviathan.views.bdv.overlay.common.DouglasPeucker;
 import org.mastodon.leviathan.views.bdv.overlay.junction.wrap.JunctionOverlayGraphWrapper;
 import org.mastodon.model.FocusModel;
 import org.mastodon.model.HighlightModel;

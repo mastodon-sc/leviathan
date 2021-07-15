@@ -48,9 +48,9 @@ import org.mastodon.leviathan.model.JunctionGraph;
 import org.mastodon.leviathan.model.JunctionModel;
 import org.mastodon.leviathan.model.MembranePart;
 import org.mastodon.leviathan.views.LeviathanJunctionView;
+import org.mastodon.leviathan.views.bdv.overlay.common.OverlayNavigation;
 import org.mastodon.leviathan.views.bdv.overlay.junction.JunctionModelOverlayProperties;
 import org.mastodon.leviathan.views.bdv.overlay.junction.JunctionOverlayGraphRenderer;
-import org.mastodon.leviathan.views.bdv.overlay.junction.JunctionOverlayNavigation;
 import org.mastodon.leviathan.views.bdv.overlay.junction.wrap.JunctionOverlayEdgeWrapper;
 import org.mastodon.leviathan.views.bdv.overlay.junction.wrap.JunctionOverlayGraphWrapper;
 import org.mastodon.leviathan.views.bdv.overlay.junction.wrap.JunctionOverlayVertexWrapper;
@@ -174,7 +174,7 @@ public class LeviathanJunctionViewBdv extends LeviathanJunctionView<
 		modelGraph.addVertexPositionListener( v -> viewer.getDisplay().repaint() );
 		selectionModel.listeners().add( () -> viewer.getDisplay().repaint() );
 
-		final JunctionOverlayNavigation< JunctionOverlayVertexWrapper< Junction, MembranePart >, JunctionOverlayEdgeWrapper< Junction, MembranePart > > overlayNavigation = new JunctionOverlayNavigation<>( viewer, viewGraph );
+		final OverlayNavigation< JunctionOverlayVertexWrapper< Junction, MembranePart >, JunctionOverlayEdgeWrapper< Junction, MembranePart > > overlayNavigation = new OverlayNavigation<>( viewer, viewGraph );
 		navigationHandler.listeners().add( overlayNavigation );
 
 		final BdvHighlightHandler< ?, ? > highlightHandler = new BdvHighlightHandler<>( viewGraph, junctionOverlay, highlightModel );

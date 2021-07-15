@@ -26,10 +26,13 @@
  * POSSIBILITY OF SUCH DAMAGE.
  * #L%
  */
-package org.mastodon.leviathan.views.bdv.overlay.cell;
+package org.mastodon.leviathan.views.bdv.overlay.common;
 
 import org.mastodon.model.NavigationListener;
 import org.mastodon.ui.NavigationEtiquette;
+import org.mastodon.views.bdv.overlay.OverlayEdge;
+import org.mastodon.views.bdv.overlay.OverlayGraph;
+import org.mastodon.views.bdv.overlay.OverlayVertex;
 
 import bdv.viewer.ViewerPanel;
 import bdv.viewer.animate.TranslationAnimator;
@@ -41,20 +44,20 @@ import net.imglib2.realtransform.AffineTransform3D;
  * @param <V>
  * @param <E>
  */
-public class CellOverlayNavigation< V extends CellOverlayVertex< V, E >, E extends CellOverlayEdge< E, V > >
+public class OverlayNavigation< V extends OverlayVertex< V, E >, E extends OverlayEdge< E, V > >
 	implements NavigationListener< V, E >
 {
 	private final ViewerPanel panel;
 
-	private final CellOverlayGraph< V, E > graph;
+	private final OverlayGraph< V, E > graph;
 
 	private NavigationEtiquette navigationEtiquette;
 
 	private NavigationBehaviour< V, E > navigationBehaviour;
 
-	public CellOverlayNavigation(
+	public OverlayNavigation(
 			final ViewerPanel panel,
-			final CellOverlayGraph< V, E > graph )
+			final OverlayGraph< V, E > graph )
 	{
 		this.panel = panel;
 		this.graph = graph;
@@ -129,7 +132,7 @@ public class CellOverlayNavigation< V extends CellOverlayVertex< V, E >, E exten
 	 * Navigation behaviours
 	 */
 
-	interface NavigationBehaviour< V extends CellOverlayVertex< V, E >, E extends CellOverlayEdge< E, V > >
+	interface NavigationBehaviour< V extends OverlayVertex< V, E >, E extends OverlayEdge< E, V > >
 	{
 		public double[] navigateToVertex( final V vertex, final AffineTransform3D currentTransform );
 

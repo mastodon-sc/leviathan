@@ -1,4 +1,4 @@
-package org.mastodon.leviathan.views.bdv.overlay.junction;
+package org.mastodon.leviathan.views.bdv.overlay.common;
 
 import org.scijava.util.DoubleArray;
 

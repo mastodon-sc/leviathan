@@ -53,10 +53,10 @@ import org.mastodon.leviathan.model.MembranePart;
 import org.mastodon.leviathan.views.LeviathanCellView;
 import org.mastodon.leviathan.views.bdv.overlay.cell.CellModelOverlayProperties;
 import org.mastodon.leviathan.views.bdv.overlay.cell.CellOverlayGraphRenderer;
-import org.mastodon.leviathan.views.bdv.overlay.cell.CellOverlayNavigation;
 import org.mastodon.leviathan.views.bdv.overlay.cell.wrap.CellOverlayEdgeWrapper;
 import org.mastodon.leviathan.views.bdv.overlay.cell.wrap.CellOverlayGraphWrapper;
 import org.mastodon.leviathan.views.bdv.overlay.cell.wrap.CellOverlayVertexWrapper;
+import org.mastodon.leviathan.views.bdv.overlay.common.OverlayNavigation;
 import org.mastodon.leviathan.views.bdv.overlay.junction.JunctionModelOverlayProperties;
 import org.mastodon.leviathan.views.bdv.overlay.junction.wrap.JunctionOverlayGraphWrapper;
 import org.mastodon.mamut.MainWindow;
@@ -187,7 +187,7 @@ public class LeviathanCellViewBdv extends LeviathanCellView< CellOverlayGraphWra
 		modelGraph.addVertexPositionListener( v -> viewer.getDisplay().repaint() );
 		selectionModel.listeners().add( () -> viewer.getDisplay().repaint() );
 
-		final CellOverlayNavigation< CellOverlayVertexWrapper< Cell, Link >, CellOverlayEdgeWrapper< Cell, Link > > overlayNavigation = new CellOverlayNavigation<>( viewer, viewGraph );
+		final OverlayNavigation< CellOverlayVertexWrapper< Cell, Link >, CellOverlayEdgeWrapper< Cell, Link > > overlayNavigation = new OverlayNavigation<>( viewer, viewGraph );
 		navigationHandler.listeners().add( overlayNavigation );
 
 		final BdvHighlightHandler< ?, ? > highlightHandler = new BdvHighlightHandler<>( viewGraph, CellOverlay, highlightModel );
