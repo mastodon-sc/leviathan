@@ -74,6 +74,7 @@ import org.mastodon.views.bdv.overlay.BdvHighlightHandler;
 import org.mastodon.views.bdv.overlay.BdvSelectionBehaviours;
 
 import bdv.BigDataViewerActions;
+import bdv.tools.InitializeViewerState;
 import bdv.viewer.NavigationActions;
 import bdv.viewer.ViewerPanel;
 
@@ -144,6 +145,8 @@ public class LeviathanCellViewBdv extends LeviathanCellView< CellOverlayGraphWra
 		appModel.getPlugins().addMenus( menu );
 
 		viewer = bdv.getViewer();
+
+		InitializeViewerState.initTransform( viewer );
 
 		final GraphColorGeneratorAdapter< Cell, Link, CellOverlayVertexWrapper< Cell, Link >, CellOverlayEdgeWrapper< Cell, Link > > coloring =
 				new GraphColorGeneratorAdapter<>( viewGraph.getVertexMap(), viewGraph.getEdgeMap() );
