@@ -48,9 +48,6 @@ import org.mastodon.leviathan.model.cell.Cell;
 import org.mastodon.leviathan.model.cell.CellGraph;
 import org.mastodon.leviathan.model.cell.CellModel;
 import org.mastodon.leviathan.model.cell.Link;
-import org.mastodon.leviathan.model.junction.Junction;
-import org.mastodon.leviathan.model.junction.JunctionModel;
-import org.mastodon.leviathan.model.junction.MembranePart;
 import org.mastodon.leviathan.views.LeviathanCellView;
 import org.mastodon.leviathan.views.bdv.overlay.cell.CellModelOverlayProperties;
 import org.mastodon.leviathan.views.bdv.overlay.cell.CellOverlayGraphRenderer;
@@ -60,8 +57,6 @@ import org.mastodon.leviathan.views.bdv.overlay.cell.wrap.CellOverlayEdgeWrapper
 import org.mastodon.leviathan.views.bdv.overlay.cell.wrap.CellOverlayGraphWrapper;
 import org.mastodon.leviathan.views.bdv.overlay.cell.wrap.CellOverlayVertexWrapper;
 import org.mastodon.leviathan.views.bdv.overlay.common.OverlayNavigation;
-import org.mastodon.leviathan.views.bdv.overlay.junction.JunctionModelOverlayProperties;
-import org.mastodon.leviathan.views.bdv.overlay.junction.wrap.JunctionOverlayGraphWrapper;
 import org.mastodon.mamut.MamutMenuBuilder;
 import org.mastodon.mamut.UndoActions;
 import org.mastodon.model.AutoNavigateFocusModel;
@@ -153,18 +148,8 @@ public class LeviathanCellViewBdv extends LeviathanCellView< CellOverlayGraphWra
 		final GraphColorGeneratorAdapter< Cell, Link, CellOverlayVertexWrapper< Cell, Link >, CellOverlayEdgeWrapper< Cell, Link > > coloring =
 				new GraphColorGeneratorAdapter<>( viewGraph.getVertexMap(), viewGraph.getEdgeMap() );
 
-		// Junction graph overly wrapper.
-		final JunctionModel junctionModel = appModel.getJunctionModel();
-		final JunctionOverlayGraphWrapper< Junction, MembranePart > junctionGraphWrapper = new JunctionOverlayGraphWrapper<>(
-				junctionModel.getGraph(),
-				junctionModel.getGraphIdBimap(),
-				junctionModel.getSpatioTemporalIndex(),
-				junctionModel.getGraph().getLock(),
-				new JunctionModelOverlayProperties( junctionModel.getGraph() ) );
-
 		final CellOverlayGraphRenderer< CellOverlayVertexWrapper< Cell, Link >, CellOverlayEdgeWrapper< Cell, Link > > cellOverlay = new CellOverlayGraphRenderer<>(
 				viewGraph,
-				junctionGraphWrapper,
 				highlightModel,
 				focusModel,
 				selectionModel,
