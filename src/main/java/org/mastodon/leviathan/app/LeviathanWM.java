@@ -415,7 +415,7 @@ public class LeviathanWM
 		return keyPressedManager;
 	}
 
-	CellRenderSettingsManager getRenderSettingsManager()
+	CellRenderSettingsManager getCellRenderSettingsManager()
 	{
 		return cellRenderSettingsManager;
 	}
