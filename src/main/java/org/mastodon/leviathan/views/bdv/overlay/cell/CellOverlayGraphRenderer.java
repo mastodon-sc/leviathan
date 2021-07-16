@@ -498,6 +498,7 @@ public class CellOverlayGraphRenderer< V extends CellOverlayVertex< V, E >, E ex
 			{
 				final boolean drawCellFilled = settings.getDrawCellFilled();
 				final boolean drawCellLabel = settings.getDrawCellLabel();
+				final Visibility< V, E > visibility = visibilities.getVisibility();
 
 				final V highlighted = highlight.getHighlightedVertex( ref1 );
 				final V focused = focus.getFocusedVertex( ref2 );
@@ -516,6 +517,9 @@ public class CellOverlayGraphRenderer< V extends CellOverlayVertex< V, E >, E ex
 
 				for ( final V vertex : ccp.getInsideValues() )
 				{
+					if ( !visibility.isVisible( vertex ) )
+						continue;
+
 					final int color = coloring.color( vertex );
 					final boolean isHighlighted = vertex.equals( highlighted );
 					final boolean isFocused = vertex.equals( focused );
@@ -878,5 +882,11 @@ public class CellOverlayGraphRenderer< V extends CellOverlayVertex< V, E >, E ex
 				contextList.add( vertex );
 		}
 		return contextList;
+	}
+
+	@Override
+	public VisibilityMode nextVisibilityMode()
+	{
+		return visibilities.nextMode();
 	}
 }

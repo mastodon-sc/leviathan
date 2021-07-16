@@ -72,6 +72,7 @@ import org.mastodon.views.bdv.SharedBigDataViewerData;
 import org.mastodon.views.bdv.ViewerFrameMamut;
 import org.mastodon.views.bdv.overlay.BdvHighlightHandler;
 import org.mastodon.views.bdv.overlay.BdvSelectionBehaviours;
+import org.mastodon.views.bdv.overlay.OverlayActions;
 
 import bdv.BigDataViewerActions;
 import bdv.tools.InitializeViewerState;
@@ -190,11 +191,10 @@ public class LeviathanCellViewBdv extends LeviathanCellView< CellOverlayGraphWra
 
 		HighlightBehaviours.install( viewBehaviours, viewGraph, viewGraph.getLock(), viewGraph, highlightModel, model );
 		FocusActions.install( viewActions, viewGraph, viewGraph.getLock(), navigateFocusModel, selectionModel );
-
 		BdvSelectionBehaviours.install( viewBehaviours, viewGraph, cellOverlay, selectionModel, focusModel, navigationHandler );
-
 		NavigationActions.install( viewActions, viewer, sharedBdvData.is2D() );
 		viewer.getTransformEventHandler().install( viewBehaviours );
+		OverlayActions.install( viewActions, viewer, cellOverlay );
 
 		viewer.addTimePointListener( timePointIndex -> timepointModel.setTimepoint( timePointIndex ) );
 		timepointModel.listeners().add( () -> viewer.setTimepoint( timepointModel.getTimepoint() ) );

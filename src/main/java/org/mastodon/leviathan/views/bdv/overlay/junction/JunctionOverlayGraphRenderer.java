@@ -48,6 +48,7 @@ import org.mastodon.ui.coloring.GraphColorGenerator;
 import org.mastodon.util.GeometryUtil;
 import org.mastodon.views.bdv.overlay.OverlayContext;
 import org.mastodon.views.bdv.overlay.OverlayGraphRenderer;
+import org.mastodon.views.bdv.overlay.Visibilities.VisibilityMode;
 import org.mastodon.views.bdv.overlay.util.BdvRendererUtil;
 import org.scijava.util.DoubleArray;
 
@@ -730,5 +731,11 @@ public class JunctionOverlayGraphRenderer< V extends JunctionOverlayVertex< V, E
 				contextList.add( vertex );
 		}
 		return contextList;
+	}
+
+	@Override
+	public VisibilityMode nextVisibilityMode()
+	{
+		return VisibilityMode.ALL;
 	}
 }
