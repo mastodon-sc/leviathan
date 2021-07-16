@@ -61,7 +61,6 @@ import org.mastodon.mamut.MamutMenuBuilder;
 import org.mastodon.mamut.UndoActions;
 import org.mastodon.model.AutoNavigateFocusModel;
 import org.mastodon.ui.FocusActions;
-import org.mastodon.ui.HighlightBehaviours;
 import org.mastodon.ui.SelectionActions;
 import org.mastodon.ui.coloring.ColoringModel;
 import org.mastodon.ui.coloring.GraphColorGeneratorAdapter;
@@ -189,7 +188,6 @@ public class LeviathanCellViewBdv extends LeviathanCellView< CellOverlayGraphWra
 
 		final AutoNavigateFocusModel< CellOverlayVertexWrapper< Cell, Link >, CellOverlayEdgeWrapper< Cell, Link > > navigateFocusModel = new AutoNavigateFocusModel<>( focusModel, navigationHandler );
 
-		HighlightBehaviours.install( viewBehaviours, viewGraph, viewGraph.getLock(), viewGraph, highlightModel, model );
 		FocusActions.install( viewActions, viewGraph, viewGraph.getLock(), navigateFocusModel, selectionModel );
 		BdvSelectionBehaviours.install( viewBehaviours, viewGraph, cellOverlay, selectionModel, focusModel, navigationHandler );
 		NavigationActions.install( viewActions, viewer, sharedBdvData.is2D() );
