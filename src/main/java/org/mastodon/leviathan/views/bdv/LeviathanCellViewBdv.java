@@ -54,6 +54,8 @@ import org.mastodon.leviathan.model.junction.MembranePart;
 import org.mastodon.leviathan.views.LeviathanCellView;
 import org.mastodon.leviathan.views.bdv.overlay.cell.CellModelOverlayProperties;
 import org.mastodon.leviathan.views.bdv.overlay.cell.CellOverlayGraphRenderer;
+import org.mastodon.leviathan.views.bdv.overlay.cell.CellRenderSettings;
+import org.mastodon.leviathan.views.bdv.overlay.cell.CellRenderSettings.UpdateListener;
 import org.mastodon.leviathan.views.bdv.overlay.cell.wrap.CellOverlayEdgeWrapper;
 import org.mastodon.leviathan.views.bdv.overlay.cell.wrap.CellOverlayGraphWrapper;
 import org.mastodon.leviathan.views.bdv.overlay.cell.wrap.CellOverlayVertexWrapper;
@@ -160,17 +162,16 @@ public class LeviathanCellViewBdv extends LeviathanCellView< CellOverlayGraphWra
 				junctionModel.getGraph().getLock(),
 				new JunctionModelOverlayProperties( junctionModel.getGraph() ) );
 
-		final CellOverlayGraphRenderer< CellOverlayVertexWrapper< Cell, Link >, CellOverlayEdgeWrapper< Cell, Link > > CellOverlay =
-				new CellOverlayGraphRenderer<>(
+		final CellOverlayGraphRenderer< CellOverlayVertexWrapper< Cell, Link >, CellOverlayEdgeWrapper< Cell, Link > > cellOverlay = new CellOverlayGraphRenderer<>(
 				viewGraph,
-						junctionGraphWrapper,
+				junctionGraphWrapper,
 				highlightModel,
 				focusModel,
 				selectionModel,
 				coloring );
-		viewer.getDisplay().overlays().add( CellOverlay );
-		viewer.renderTransformListeners().add( CellOverlay );
-		viewer.addTimePointListener( CellOverlay );
+		viewer.getDisplay().overlays().add( cellOverlay );
+		viewer.renderTransformListeners().add( cellOverlay );
+		viewer.addTimePointListener( cellOverlay );
 
 		final CellModel model = appModel.getModel();
 		final CellGraph modelGraph = model.getGraph();
@@ -189,7 +190,7 @@ public class LeviathanCellViewBdv extends LeviathanCellView< CellOverlayGraphWra
 		final OverlayNavigation< CellOverlayVertexWrapper< Cell, Link >, CellOverlayEdgeWrapper< Cell, Link > > overlayNavigation = new OverlayNavigation<>( viewer, viewGraph );
 		navigationHandler.listeners().add( overlayNavigation );
 
-		final BdvHighlightHandler< ?, ? > highlightHandler = new BdvHighlightHandler<>( viewGraph, CellOverlay, highlightModel );
+		final BdvHighlightHandler< ?, ? > highlightHandler = new BdvHighlightHandler<>( viewGraph, cellOverlay, highlightModel );
 		viewer.getDisplay().addHandler( highlightHandler );
 		viewer.renderTransformListeners().add( highlightHandler );
 
@@ -202,13 +203,21 @@ public class LeviathanCellViewBdv extends LeviathanCellView< CellOverlayGraphWra
 		HighlightBehaviours.install( viewBehaviours, viewGraph, viewGraph.getLock(), viewGraph, highlightModel, model );
 		FocusActions.install( viewActions, viewGraph, viewGraph.getLock(), navigateFocusModel, selectionModel );
 
-		BdvSelectionBehaviours.install( viewBehaviours, viewGraph, CellOverlay, selectionModel, focusModel, navigationHandler );
+		BdvSelectionBehaviours.install( viewBehaviours, viewGraph, cellOverlay, selectionModel, focusModel, navigationHandler );
 
 		NavigationActions.install( viewActions, viewer, sharedBdvData.is2D() );
 		viewer.getTransformEventHandler().install( viewBehaviours );
 
 		viewer.addTimePointListener( timePointIndex -> timepointModel.setTimepoint( timePointIndex ) );
 		timepointModel.listeners().add( () -> viewer.setTimepoint( timepointModel.getTimepoint() ) );
+
+		final CellRenderSettings cellRenderSettings = appModel.getCellRenderSettingsManager().getForwardDefaultStyle();
+		cellOverlay.setCellRenderSettings( cellRenderSettings );
+		final UpdateListener updateListener = () -> {
+			viewer.repaint();
+		};
+		cellRenderSettings.updateListeners().add( updateListener );
+		onClose( () -> cellRenderSettings.updateListeners().remove( updateListener ) );
 
 		// Give focus to display so that it can receive key-presses immediately.
 		viewer.getDisplay().requestFocusInWindow();
