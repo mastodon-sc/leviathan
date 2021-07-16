@@ -30,10 +30,13 @@ package org.mastodon.leviathan.views.bdv.overlay.cell;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.awt.font.FontRenderContext;
+import java.awt.font.TextLayout;
 import java.awt.geom.Path2D;
 import java.awt.geom.Rectangle2D;
 
@@ -41,10 +44,7 @@ import org.mastodon.collection.RefCollection;
 import org.mastodon.collection.RefCollections;
 import org.mastodon.collection.RefList;
 import org.mastodon.kdtree.ClipConvexPolytope;
-import org.mastodon.leviathan.model.junction.Junction;
-import org.mastodon.leviathan.model.junction.MembranePart;
 import org.mastodon.leviathan.views.bdv.overlay.common.DouglasPeucker;
-import org.mastodon.leviathan.views.bdv.overlay.junction.wrap.JunctionOverlayGraphWrapper;
 import org.mastodon.model.FocusModel;
 import org.mastodon.model.HighlightModel;
 import org.mastodon.model.SelectionModel;
@@ -98,7 +98,6 @@ public class CellOverlayGraphRenderer< V extends CellOverlayVertex< V, E >, E ex
 
 	public CellOverlayGraphRenderer(
 			final CellOverlayGraph< V, E > graph,
-			final JunctionOverlayGraphWrapper< Junction, MembranePart > junctionGraphWrapper,
 			final HighlightModel< V, E > highlight,
 			final FocusModel< V, E > focus,
 			final SelectionModel< V, E > selection,
@@ -554,11 +553,10 @@ public class CellOverlayGraphRenderer< V extends CellOverlayVertex< V, E >, E ex
 						graphics.draw( path );
 						if ( drawCellLabel )
 						{
+							vertex.localize( pos );
+							transform.apply( pos, vPos );
 							final String str = vertex.getLabel();
-							final Rectangle2D bounds = graphics.getFontMetrics().getStringBounds( str, graphics );
-							graphics.drawString( str,
-									( float ) ( vPos[ 0 ] - bounds.getWidth() / 2. ),
-									( float ) ( vPos[ 1 ] - bounds.getHeight() / 2. ) );
+							drawLabel( graphics, vPos[ 0 ], vPos[ 1 ], true, str );
 						}
 
 						if ( isHighlighted || isFocused )
@@ -586,10 +584,7 @@ public class CellOverlayGraphRenderer< V extends CellOverlayVertex< V, E >, E ex
 						if ( drawCellLabel )
 						{
 							final String str = vertex.getLabel();
-							final Rectangle2D bounds = graphics.getFontMetrics().getStringBounds( str, graphics );
-							graphics.drawString( str,
-									( float ) ( x + radius + 1. ),
-									( float ) ( y - bounds.getHeight() / 2. ) );
+							drawLabel( graphics, x + radius + 1, y, false, str );
 						}
 
 					}
@@ -605,6 +600,18 @@ public class CellOverlayGraphRenderer< V extends CellOverlayVertex< V, E >, E ex
 		graph.releaseRef( ref1 );
 		graph.releaseRef( ref2 );
 		graph.releaseRef( ref3 );
+	}
+
+	private static final Font font = new Font( "SansSerif", Font.PLAIN, 9 );
+
+	private static final void drawLabel( final Graphics2D graphics, final double x, final double y, final boolean center, final String label )
+	{
+		final FontRenderContext frc = graphics.getFontRenderContext();
+		final TextLayout layout = new TextLayout( label, font, frc );
+		final Rectangle2D bounds = layout.getBounds();
+		final float tx = ( float ) ( x - ( center ? bounds.getCenterX() : 0. ) );
+		final float ty = ( float ) ( y - bounds.getCenterY() );
+		layout.draw( graphics, tx, ty );
 	}
 
 	private void toPath(
