@@ -20,6 +20,7 @@ import org.scijava.ui.behaviour.util.Actions;
 import bdv.spimdata.SpimDataMinimal;
 import bdv.spimdata.XmlIoSpimDataMinimal;
 import bdv.viewer.ViewerOptions;
+import bdv.viewer.animate.MessageOverlayAnimator;
 import mpicbg.spim.data.SpimDataException;
 import mpicbg.spim.data.SpimDataIOException;
 import mpicbg.spim.data.generic.sequence.BasicViewSetup;
@@ -45,6 +46,7 @@ public class LeviathanMaskImporter
 		final Actions globalAppActions = wm.getGlobalAppActions();
 		final ViewerOptions options = ViewerOptions.options()
 				.shareKeyPressedEvents( keyPressedManager )
+				.msgOverlay( new MessageOverlayAnimator( 1600 ) )
 				.width( 600 )
 				.height( 400 );
 
