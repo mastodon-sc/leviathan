@@ -8,7 +8,6 @@ import org.mastodon.leviathan.algorithms.MaskImporter;
 import org.mastodon.leviathan.model.cell.CellModel;
 import org.mastodon.leviathan.model.junction.JunctionModel;
 import org.mastodon.leviathan.plugin.LeviathanPlugins;
-import org.mastodon.leviathan.views.bdv.LeviathanCellViewBdv;
 import org.mastodon.leviathan.views.bdv.overlay.cell.ui.CellRenderSettingsManager;
 import org.mastodon.ui.coloring.feature.FeatureColorModeManager;
 import org.mastodon.ui.keymap.KeymapManager;
@@ -71,7 +70,7 @@ public class LeviathanMaskImporter
 				maskPath,
 				spimData,
 				options,
-				() -> wm.forEachCellBdvView( LeviathanCellViewBdv::requestRepaint ) );
+				() -> {} );
 
 		/*
 		 * Physical units.
