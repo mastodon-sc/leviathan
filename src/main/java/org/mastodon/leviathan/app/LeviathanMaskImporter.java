@@ -1,28 +1,15 @@
 package org.mastodon.leviathan.app;
 
-import java.io.File;
 import java.io.IOException;
 
 import org.mastodon.leviathan.algorithms.FindFaces;
 import org.mastodon.leviathan.algorithms.MaskImporter;
 import org.mastodon.leviathan.model.cell.CellModel;
 import org.mastodon.leviathan.model.junction.JunctionModel;
-import org.mastodon.leviathan.plugin.LeviathanPlugins;
-import org.mastodon.leviathan.views.bdv.overlay.cell.ui.CellRenderSettingsManager;
-import org.mastodon.ui.coloring.feature.FeatureColorModeManager;
-import org.mastodon.ui.keymap.KeymapManager;
-import org.mastodon.util.DummySpimData;
 import org.mastodon.views.bdv.SharedBigDataViewerData;
 import org.scijava.Context;
-import org.scijava.ui.behaviour.KeyPressedManager;
-import org.scijava.ui.behaviour.util.Actions;
 
-import bdv.spimdata.SpimDataMinimal;
-import bdv.spimdata.XmlIoSpimDataMinimal;
-import bdv.viewer.ViewerOptions;
-import bdv.viewer.animate.MessageOverlayAnimator;
 import mpicbg.spim.data.SpimDataException;
-import mpicbg.spim.data.SpimDataIOException;
 import mpicbg.spim.data.generic.sequence.BasicViewSetup;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.type.numeric.RealType;
@@ -37,48 +24,17 @@ public class LeviathanMaskImporter
 		 * Prepare window manager.
 		 */
 
+
 		final LeviathanWM wm = new LeviathanWM( context );
-		final KeyPressedManager keyPressedManager = wm.getKeyPressedManager();
-		final FeatureColorModeManager featureColorModeManager = wm.getFeatureColorModeManager();
-		final CellRenderSettingsManager cellRenderSettingsManager = wm.getCellRenderSettingsManager();
-		final KeymapManager keymapManager = wm.getKeymapManager();
-		final LeviathanPlugins plugins = wm.getPlugins();
-		final Actions globalAppActions = wm.getGlobalAppActions();
-		final ViewerOptions options = ViewerOptions.options()
-				.shareKeyPressedEvents( keyPressedManager )
-				.msgOverlay( new MessageOverlayAnimator( 1600 ) )
-				.width( 600 )
-				.height( 400 );
-
-		/*
-		 * Create shared image data structure.
-		 */
-
-		SpimDataMinimal spimData = DummySpimData.tryCreate( new File( maskPath ).getName() );
-		if ( spimData == null )
-		{
-			try
-			{
-				spimData = new XmlIoSpimDataMinimal().load( maskPath );
-			}
-			catch ( final SpimDataIOException e )
-			{
-				e.printStackTrace();
-				System.err.println( "Could not open image data file. Opening with dummy dataset. Please fix dataset path!" );
-				spimData = DummySpimData.tryCreate( "x=100 y=100 z=100 sx=1 sy=1 sz=1 t=10.dummy" );
-			}
-		}
-		final SharedBigDataViewerData sharedBdvData = new SharedBigDataViewerData(
-				maskPath,
-				spimData,
-				options,
-				() -> {} );
+		wm.setImagePath( maskPath );
 
 		/*
 		 * Physical units.
 		 */
 
-		final String spaceUnits = spimData.getSequenceDescription().getViewSetupsOrdered().stream()
+		final SharedBigDataViewerData sharedBdvData = wm.getSharedBdvData();
+		final String spaceUnits = sharedBdvData.getSpimData().getSequenceDescription().getViewSetupsOrdered()
+				.stream()
 				.filter( BasicViewSetup::hasVoxelSize )
 				.map( setup -> setup.getVoxelSize().unit() )
 				.findFirst()
@@ -105,31 +61,12 @@ public class LeviathanMaskImporter
 
 		final CellModel cellModel = new CellModel( spaceUnits, timeUnits );
 		FindFaces.findFaces( junctionModel.getGraph(), cellModel.getGraph() );
-
 		/*
 		 * Pass results to window manager and return it.
 		 */
 
-		final LeviathanJunctionAppModel junctionAppModel = new LeviathanJunctionAppModel(
-				junctionModel,
-				sharedBdvData,
-				keyPressedManager,
-				featureColorModeManager,
-				keymapManager,
-				plugins,
-				globalAppActions );
-
-		final LeviathanCellAppModel cellAppModel = new LeviathanCellAppModel(
-				cellModel,
-				junctionAppModel.getModel(),
-				sharedBdvData,
-				keyPressedManager,
-				cellRenderSettingsManager,
-				featureColorModeManager,
-				keymapManager,
-				plugins,
-				globalAppActions );
-		wm.setAppModels( cellAppModel, junctionAppModel );
+		wm.setJunctionModel( junctionModel );
+		wm.setCellModel( cellModel );
 		return wm;
 	}
 }

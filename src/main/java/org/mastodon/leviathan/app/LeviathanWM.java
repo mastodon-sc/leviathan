@@ -35,6 +35,7 @@ import static org.mastodon.app.MastodonIcons.TAGS_ICON;
 
 import java.awt.Window;
 import java.awt.event.WindowEvent;
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,9 +47,13 @@ import javax.swing.JDialog;
 import org.mastodon.app.ui.MastodonFrameView;
 import org.mastodon.feature.FeatureSpecsService;
 import org.mastodon.feature.ui.FeatureColorModeConfigPage;
+import org.mastodon.leviathan.algorithms.FindFaces;
 import org.mastodon.leviathan.feature.LeviathanCellFeatureComputation;
 import org.mastodon.leviathan.feature.LeviathanCellFeatureProjectionsManager;
 import org.mastodon.leviathan.model.cell.CellModel;
+import org.mastodon.leviathan.model.junction.Junction;
+import org.mastodon.leviathan.model.junction.JunctionGraph;
+import org.mastodon.leviathan.model.junction.JunctionModel;
 import org.mastodon.leviathan.plugin.LeviathanPlugin;
 import org.mastodon.leviathan.plugin.LeviathanPluginAppModel;
 import org.mastodon.leviathan.plugin.LeviathanPlugins;
@@ -68,7 +73,9 @@ import org.mastodon.ui.keymap.KeyConfigContexts;
 import org.mastodon.ui.keymap.Keymap;
 import org.mastodon.ui.keymap.KeymapManager;
 import org.mastodon.ui.keymap.KeymapSettingsPage;
+import org.mastodon.util.DummySpimData;
 import org.mastodon.util.ToggleDialogAction;
+import org.mastodon.views.bdv.SharedBigDataViewerData;
 import org.scijava.Context;
 import org.scijava.InstantiableException;
 import org.scijava.plugin.Plugin;
@@ -79,24 +86,42 @@ import org.scijava.ui.behaviour.util.AbstractNamedAction;
 import org.scijava.ui.behaviour.util.Actions;
 import org.scijava.ui.behaviour.util.RunnableAction;
 
+import bdv.spimdata.SpimDataMinimal;
+import bdv.spimdata.XmlIoSpimDataMinimal;
 import bdv.util.InvokeOnEDT;
+import bdv.viewer.ViewerOptions;
+import bdv.viewer.animate.MessageOverlayAnimator;
+import mpicbg.spim.data.SpimDataException;
+import mpicbg.spim.data.SpimDataIOException;
 
 public class LeviathanWM
 {
 	public static final String NEW_CELL_BDV_VIEW = "new cell bdv view";
+
 	public static final String NEW_JUNCTION_BDV_VIEW = "new junction bdv view";
+
 	public static final String NEW_CELL_TABLE_VIEW = "new full cell table view";
+
 	public static final String NEW_CELL_SELECTION_TABLE_VIEW = "new selection cell table view";
+
 	public static final String PREFERENCES_DIALOG = "Preferences";
+
 	public static final String TAGSETS_DIALOG = "edit tag sets";
+
 	public static final String COMPUTE_FEATURE_DIALOG = "compute features";
 
 	static final String[] NEW_CELL_BDV_VIEW_KEYS = new String[] { "not mapped" };
+
 	static final String[] NEW_JUNCTION_BDV_VIEW_KEYS = new String[] { "not mapped" };
+
 	static final String[] NEW_CELL_TABLE_VIEW_KEYS = new String[] { "not mapped" };
+
 	static final String[] NEW_CELL_SELECTION_TABLE_VIEW_KEYS = new String[] { "not mapped" };
+
 	static final String[] PREFERENCES_DIALOG_KEYS = new String[] { "meta COMMA", "ctrl COMMA" };
+
 	static final String[] TAGSETS_DIALOG_KEYS = new String[] { "not mapped" };
+
 	static final String[] COMPUTE_FEATURE_DIALOG_KEYS = new String[] { "not mapped" };
 
 	/*
@@ -168,6 +193,10 @@ public class LeviathanWM
 	private TagSetDialog tagSetDialog;
 
 	private JDialog featureComputationDialog;
+
+	private FindFaces faceFinder;
+
+	private SharedBigDataViewerData sharedBdvData;
 
 	public LeviathanWM( final Context context )
 	{
@@ -247,44 +276,61 @@ public class LeviathanWM
 
 	private void updateEnabledActions()
 	{
-		newCellBdvViewAction.setEnabled( cellAppModel != null );
-		newJunctionBdvViewAction.setEnabled( junctionAppModel != null );
+		newCellBdvViewAction.setEnabled( cellAppModel != null && sharedBdvData != null );
+		newJunctionBdvViewAction.setEnabled( junctionAppModel != null && sharedBdvData != null );
 		newCellTableViewAction.setEnabled( cellAppModel != null );
 		newCellSelectionTableViewAction.setEnabled( cellAppModel != null );
 		editTagSetsAction.setEnabled( cellAppModel != null );
 		featureComputationAction.setEnabled( cellAppModel != null );
 	}
 
-	public void setAppModels( final LeviathanCellAppModel cellAppModel, final LeviathanJunctionAppModel junctionAppModel )
+	public void setImagePath( final String path ) throws SpimDataException
 	{
 		closeAllWindows();
+		this.sharedBdvData = toSharedBdvData( path, this );
 
-		this.cellAppModel = cellAppModel;
-		this.junctionAppModel = junctionAppModel;
-		if ( cellAppModel == null || junctionAppModel == null )
+		if ( cellAppModel != null )
+			this.cellAppModel = toAppModel( cellAppModel.getModel(), sharedBdvData, this );
+
+		if ( junctionAppModel != null )
+			this.junctionAppModel = toAppModel( junctionAppModel.getModel(), sharedBdvData, this );
+
+		updateEnabledActions();
+	}
+
+	public void setCellModel( final CellModel model )
+	{
+		closeAllWindows();
+		this.cellAppModel = toAppModel( model, sharedBdvData, this );
+		if ( model == null )
 		{
-			tagSetDialog.dispose();
+			if ( tagSetDialog != null )
+				tagSetDialog.dispose();
 			tagSetDialog = null;
-			featureComputationDialog.dispose();
+			if ( featureComputationDialog != null )
+				featureComputationDialog.dispose();
 			featureComputationDialog = null;
-			featureProjectionsManager.setModel( null, 1 );
+			if ( featureProjectionsManager != null )
+				featureProjectionsManager.setModel( null, 1 );
 			updateEnabledActions();
 			return;
 		}
 
-		final CellModel model = cellAppModel.getModel();
 		SelectionActions.install( cellAppModel.getAppActions(), model.getGraph(), model.getGraph().getLock(), model.getGraph(), cellAppModel.getSelectionModel(), model );
-
 		final Keymap keymap = keymapManager.getForwardDefaultKeymap();
-		tagSetDialog = new TagSetDialog( null, model.getTagSetModel(), model, keymap, new String[] { KeyConfigContexts.MASTODON } );
+		tagSetDialog = new TagSetDialog( null, model.getTagSetModel(), model, keymap, new String[] { LeviathanKeyConfigContexts.LEVIATHAN } );
 		tagSetDialog.setIconImages( TAGS_ICON );
 		featureComputationDialog = LeviathanCellFeatureComputation.getDialog( cellAppModel, context );
 		featureComputationDialog.setIconImages( FEATURES_ICON );
-		featureProjectionsManager.setModel( model, cellAppModel.getSharedBdvData().getSources().size() );
-
 		updateEnabledActions();
-
 		plugins.setAppPluginModel( new LeviathanPluginAppModel( junctionAppModel, this ) );
+	}
+
+	public void setJunctionModel( final JunctionModel junctionModel )
+	{
+		closeAllWindows();
+		this.junctionAppModel = toAppModel( junctionModel, sharedBdvData, this );
+		updateEnabledActions();
 	}
 
 	private synchronized void addCellBdvWindow( final LeviathanCellViewBdv w )
@@ -344,9 +390,9 @@ public class LeviathanWM
 
 	public LeviathanJunctionViewBdv createJunctionBigDataViewer()
 	{
-		if ( cellAppModel != null )
+		if ( junctionAppModel != null )
 		{
-			final LeviathanJunctionViewBdv view = new LeviathanJunctionViewBdv( junctionAppModel );
+			final LeviathanJunctionViewBdv view = new LeviathanJunctionViewBdv( junctionAppModel, faceFinder );
 			view.getFrame().setIconImages( BDV_VIEW_ICON );
 			addJunctionBdvWindow( view );
 			return view;
@@ -455,6 +501,11 @@ public class LeviathanWM
 		return context;
 	}
 
+	public SharedBigDataViewerData getSharedBdvData()
+	{
+		return sharedBdvData;
+	}
+
 	public FeatureSpecsService getFeatureSpecsService()
 	{
 		return context.getService( FeatureSpecsService.class );
@@ -466,5 +517,92 @@ public class LeviathanWM
 		context.inject( builder );
 		builder.discoverProviders();
 		return builder.build();
+	}
+
+	private static final LeviathanCellAppModel toAppModel( final CellModel cellModel, final SharedBigDataViewerData sharedBdvData, final LeviathanWM wm )
+	{
+		if ( cellModel == null )
+			return null;
+		return new LeviathanCellAppModel(
+				cellModel,
+				sharedBdvData,
+				wm.keyPressedManager,
+				wm.cellRenderSettingsManager,
+				wm.featureColorModeManager,
+				wm.keymapManager,
+				wm.plugins,
+				wm.globalAppActions );
+	}
+
+	private static final LeviathanJunctionAppModel toAppModel( final JunctionModel junctionModel, final SharedBigDataViewerData sharedBdvData, final LeviathanWM wm )
+	{
+		if ( junctionModel == null )
+			return null;
+		return new LeviathanJunctionAppModel(
+				junctionModel,
+				sharedBdvData,
+				wm.keyPressedManager,
+				wm.featureColorModeManager,
+				wm.keymapManager, wm.plugins,
+				wm.globalAppActions );
+	}
+
+	public static final String dummyBdvData( final JunctionGraph graph )
+	{
+		double maxX = Double.NEGATIVE_INFINITY;
+		double maxY = Double.NEGATIVE_INFINITY;
+		double maxZ = Double.NEGATIVE_INFINITY;
+		int maxT = 0;
+		for ( final Junction v : graph.vertices() )
+		{
+			final double x = v.getDoublePosition( 0 );
+			if ( x > maxX )
+				maxX = x;
+			final double y = v.getDoublePosition( 1 );
+			if ( y > maxY )
+				maxY = y;
+			final double z = v.getDoublePosition( 2 );
+			if ( z > maxZ )
+				maxZ = z;
+			v.getDoublePosition( 2 );
+			final int t = v.getTimepoint();
+			if ( t > maxT )
+				maxT = t;
+		}
+
+		final int lx = ( int ) Math.ceil( maxX ) + 1;
+		final int ly = ( int ) Math.ceil( maxY ) + 1;
+		final int lz = ( int ) Math.ceil( maxZ );
+		return String.format( "x=%d y=%d z=%d sx=1 sy=1 sz=1 t=%d.dummy", lx, ly, lz, maxT + 1 );
+	}
+
+	private static final SharedBigDataViewerData toSharedBdvData( final String path, final LeviathanWM wm ) throws SpimDataException
+	{
+		final ViewerOptions options = ViewerOptions.options()
+				.shareKeyPressedEvents( wm.keyPressedManager )
+				.msgOverlay( new MessageOverlayAnimator( 1600 ) )
+				.width( 600 )
+				.height( 400 );
+
+		SpimDataMinimal spimData = DummySpimData.tryCreate( new File( path ).getName() );
+		if ( spimData == null )
+		{
+			try
+			{
+				spimData = new XmlIoSpimDataMinimal().load( path );
+			}
+			catch ( final SpimDataIOException e )
+			{
+				e.printStackTrace();
+				System.err.println( "Could not open image data file. Opening with dummy dataset. Please fix dataset path!" );
+				spimData = DummySpimData.tryCreate( "x=100 y=100 z=1 sx=1 sy=1 sz=1 t=10.dummy" );
+			}
+		}
+		final SharedBigDataViewerData sharedBdvData = new SharedBigDataViewerData(
+				path,
+				spimData,
+				options,
+				() -> {} );
+		return sharedBdvData;
 	}
 }

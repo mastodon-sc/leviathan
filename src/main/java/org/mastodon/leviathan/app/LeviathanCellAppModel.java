@@ -32,7 +32,6 @@ import org.mastodon.app.MastodonAppModel;
 import org.mastodon.leviathan.model.cell.Cell;
 import org.mastodon.leviathan.model.cell.CellModel;
 import org.mastodon.leviathan.model.cell.Link;
-import org.mastodon.leviathan.model.junction.JunctionModel;
 import org.mastodon.leviathan.plugin.LeviathanPlugins;
 import org.mastodon.leviathan.views.bdv.overlay.cell.ui.CellRenderSettingsManager;
 import org.mastodon.ui.coloring.feature.FeatureColorModeManager;
@@ -59,13 +58,10 @@ public class LeviathanCellAppModel extends MastodonAppModel< CellModel, Cell, Li
 
 	private final int maxTimepoint;
 
-	private final JunctionModel junctionModel;
-
 	private final CellRenderSettingsManager cellRenderSettingsManager;
 
 	public LeviathanCellAppModel(
 			final CellModel model,
-			final JunctionModel junctionModel,
 			final SharedBigDataViewerData sharedBdvData,
 			final KeyPressedManager keyPressedManager,
 			final CellRenderSettingsManager cellRenderSettingsManager,
@@ -82,12 +78,18 @@ public class LeviathanCellAppModel extends MastodonAppModel< CellModel, Cell, Li
 				plugins,
 				globalActions,
 				new String[] { LeviathanKeyConfigContexts.LEVIATHAN } );
-		this.junctionModel = junctionModel;
 		this.sharedBdvData = sharedBdvData;
 		this.cellRenderSettingsManager = cellRenderSettingsManager;
 		this.featureColorModeManager = featureColorModeManager;
 		this.minTimepoint = 0;
-		this.maxTimepoint = sharedBdvData.getNumTimepoints() - 1;
+		final int maxt;
+		if ( sharedBdvData != null )
+			maxt = sharedBdvData.getNumTimepoints();
+		else
+			maxt = model.getGraph().vertices().stream().mapToInt( Cell::getTimepoint ).max().getAsInt();
+
+		this.maxTimepoint = maxt - 1;
+
 	}
 
 	public FeatureColorModeManager getFeatureColorModeManager()
@@ -113,10 +115,5 @@ public class LeviathanCellAppModel extends MastodonAppModel< CellModel, Cell, Li
 	public CellRenderSettingsManager getCellRenderSettingsManager()
 	{
 		return cellRenderSettingsManager;
-	}
-
-	public JunctionModel getJunctionModel()
-	{
-		return junctionModel;
 	}
 }

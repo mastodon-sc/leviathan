@@ -78,7 +78,13 @@ public class LeviathanJunctionAppModel extends MastodonAppModel< JunctionModel, 
 		this.sharedBdvData = sharedBdvData;
 		this.featureColorModeManager = featureColorModeManager;
 		this.minTimepoint = 0;
-		this.maxTimepoint = sharedBdvData.getNumTimepoints() - 1;
+		final int maxt;
+		if ( sharedBdvData != null )
+			maxt = sharedBdvData.getNumTimepoints() - 1;
+		else
+			maxt = model.getGraph().vertices().stream().mapToInt( Junction::getTimepoint ).max().getAsInt();
+
+		this.maxTimepoint = maxt;
 	}
 
 	public FeatureColorModeManager getFeatureColorModeManager()
