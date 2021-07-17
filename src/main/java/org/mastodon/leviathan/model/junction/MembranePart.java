@@ -19,8 +19,24 @@ public class MembranePart extends AbstractListenableEdge< MembranePart, Junction
 	{
 		pool.cellIdCCW.set( this, UNINITIALIZED );
 		pool.cellIdCW.set( this, UNINITIALIZED );
+		initPixels();
 		super.initDone();
 		return this;
+	}
+
+	private void initPixels()
+	{
+		final double[] pixels = new double[ 4 ];
+		final Junction ref = vertexPool.createRef();
+		final Junction source = getSource( ref );
+		pixels[ 0 ] = source.getDoublePosition( 0 );
+		pixels[ 1 ] = source.getDoublePosition( 1 );
+		final Junction target = getTarget( ref );
+		pixels[ 2 ] = target.getDoublePosition( 0 );
+		pixels[ 3 ] = target.getDoublePosition( 1 );
+		vertexPool.releaseRef( ref );
+		setPixels( pixels );
+		pool.pixels.getMap().put( this, pixels ); // quiet.
 	}
 
 	@Override
