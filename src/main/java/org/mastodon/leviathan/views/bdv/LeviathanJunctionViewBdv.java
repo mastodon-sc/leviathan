@@ -42,12 +42,14 @@ import org.mastodon.app.ui.MastodonFrameViewActions;
 import org.mastodon.app.ui.ViewMenu;
 import org.mastodon.app.ui.ViewMenuBuilder;
 import org.mastodon.app.ui.ViewMenuBuilder.JMenuHandle;
+import org.mastodon.leviathan.algorithms.FindFaces;
 import org.mastodon.leviathan.app.LeviathanJunctionAppModel;
 import org.mastodon.leviathan.model.junction.Junction;
 import org.mastodon.leviathan.model.junction.JunctionGraph;
 import org.mastodon.leviathan.model.junction.JunctionModel;
 import org.mastodon.leviathan.model.junction.MembranePart;
 import org.mastodon.leviathan.views.LeviathanJunctionView;
+import org.mastodon.leviathan.views.bdv.overlay.common.EditJunctionBehaviours;
 import org.mastodon.leviathan.views.bdv.overlay.common.OverlayNavigation;
 import org.mastodon.leviathan.views.bdv.overlay.junction.JunctionModelOverlayProperties;
 import org.mastodon.leviathan.views.bdv.overlay.junction.JunctionOverlayGraphRenderer;
@@ -94,7 +96,7 @@ public class LeviathanJunctionViewBdv extends LeviathanJunctionView<
 	 */
 	private final ColoringModel coloringModel;
 
-	public LeviathanJunctionViewBdv( final LeviathanJunctionAppModel appModel )
+	public LeviathanJunctionViewBdv( final LeviathanJunctionAppModel appModel, final FindFaces faceFinder )
 	{
 		super( appModel,
 				new JunctionOverlayGraphWrapper<>(
@@ -193,6 +195,18 @@ public class LeviathanJunctionViewBdv extends LeviathanJunctionView<
 		BdvSelectionBehaviours.install( viewBehaviours, viewGraph, junctionOverlay, selectionModel, focusModel, navigationHandler );
 		NavigationActions.install( viewActions, viewer, sharedBdvData.is2D() );
 		viewer.getTransformEventHandler().install( viewBehaviours );
+		
+		EditJunctionBehaviours.install(
+				viewBehaviours,
+				viewer,
+				viewGraph,
+				faceFinder,
+				viewGraph.getVertexMap(),
+				viewGraph.getEdgeMap(),
+				junctionOverlay,
+				selectionModel,
+				focusModel,
+				model );
 
 		viewer.addTimePointListener( timePointIndex -> timepointModel.setTimepoint( timePointIndex ) );
 		timepointModel.listeners().add( () -> viewer.setTimepoint( timepointModel.getTimepoint() ) );
