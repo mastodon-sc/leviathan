@@ -156,4 +156,16 @@ public class JunctionOverlayEdgeWrapper< V extends Vertex< E >, E extends Edge< 
 	{
 		return overlayProperties.getPixels( we );
 	}
+
+	@Override
+	public int getCellIdCCW()
+	{
+		return overlayProperties.getCellIdCCW( we );
+	}
+
+	@Override
+	public int getCellIdCW()
+	{
+		return overlayProperties.getCellIdCW( we );
+	}
 }

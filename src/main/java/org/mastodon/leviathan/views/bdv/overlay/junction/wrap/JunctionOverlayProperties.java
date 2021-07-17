@@ -59,4 +59,8 @@ public interface JunctionOverlayProperties< V, E >
 	public void removeVertex( V v );
 
 	public void notifyGraphChanged();
+
+	public int getCellIdCCW( E we );
+
+	public int getCellIdCW( E we );
 }

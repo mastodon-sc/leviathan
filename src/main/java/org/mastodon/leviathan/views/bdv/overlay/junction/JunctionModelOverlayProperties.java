@@ -131,4 +131,16 @@ public class JunctionModelOverlayProperties implements JunctionOverlayProperties
 	{
 		return v.init( timepoint, position );
 	}
+
+	@Override
+	public int getCellIdCCW( final MembranePart e )
+	{
+		return e.getCellIdCCW();
+	}
+
+	@Override
+	public int getCellIdCW( final MembranePart e )
+	{
+		return e.getCellIdCW();
+	}
 }

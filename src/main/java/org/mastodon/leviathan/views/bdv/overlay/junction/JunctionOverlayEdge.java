@@ -39,4 +39,8 @@ public interface JunctionOverlayEdge< O extends JunctionOverlayEdge< O, V >, V e
 	public void setPixels( double[] pixels );
 
 	public double[] getPixels();
+
+	public int getCellIdCCW();
+
+	public int getCellIdCW();
 }
