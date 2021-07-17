@@ -316,6 +316,8 @@ public class LeviathanWM
 			return;
 		}
 
+		if ( junctionAppModel != null )
+			faceFinder = FindFaces.create( junctionAppModel.getModel().getGraph(), model.getGraph() );
 		SelectionActions.install( cellAppModel.getAppActions(), model.getGraph(), model.getGraph().getLock(), model.getGraph(), cellAppModel.getSelectionModel(), model );
 		final Keymap keymap = keymapManager.getForwardDefaultKeymap();
 		tagSetDialog = new TagSetDialog( null, model.getTagSetModel(), model, keymap, new String[] { LeviathanKeyConfigContexts.LEVIATHAN } );
@@ -330,6 +332,10 @@ public class LeviathanWM
 	{
 		closeAllWindows();
 		this.junctionAppModel = toAppModel( junctionModel, sharedBdvData, this );
+		if ( junctionAppModel != null && cellAppModel != null )
+			faceFinder = FindFaces.create( 
+					junctionAppModel.getModel().getGraph(), 
+					cellAppModel.getModel().getGraph() );
 		updateEnabledActions();
 	}
 
