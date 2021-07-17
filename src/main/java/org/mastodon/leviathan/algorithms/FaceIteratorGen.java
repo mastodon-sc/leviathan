@@ -2,55 +2,58 @@ package org.mastodon.leviathan.algorithms;
 
 import java.util.Iterator;
 
-import org.mastodon.graph.ref.AllEdges;
-import org.mastodon.leviathan.model.junction.Junction;
-import org.mastodon.leviathan.model.junction.JunctionGraph;
-import org.mastodon.leviathan.model.junction.MembranePart;
+import org.mastodon.Ref;
+import org.mastodon.graph.Edge;
+import org.mastodon.graph.Edges;
+import org.mastodon.graph.ReadOnlyGraph;
+import org.mastodon.graph.Vertex;
 
-public class FaceIteratorGen
+import net.imglib2.RealLocalizable;
+
+public class FaceIteratorGen< V extends Vertex< E > & Ref< V > & RealLocalizable, E extends Edge< V > & Ref< E > >
 {
 
-	private final JunctionGraph graph;
+	private final ReadOnlyGraph< V, E > graph;
 
-	public FaceIteratorGen( final JunctionGraph graph )
+	public FaceIteratorGen( final ReadOnlyGraph< V, E > graph )
 	{
 		this.graph = graph;
 	}
 
-	public FaceIterator iterateCW( final MembranePart from )
+	public FaceIterator iterateCW( final E from )
 	{
 		return new FaceIterator( from, true );
 	}
 
-	public FaceIterator iterateCCW( final MembranePart from )
+	public FaceIterator iterateCCW( final E from )
 	{
 		return new FaceIterator( from, false );
 	}
 
-	public class FaceIterator implements Iterator< MembranePart >
+	public class FaceIterator implements Iterator< E >
 	{
 
-		private final MembranePart start;
+		private final E start;
 
-		private final MembranePart next;
+		private final E next;
 
-		private final Junction pivot;
+		private final V pivot;
 
-		private final Junction vref1;
+		private final V vref1;
 
-		private final Junction vref2;
+		private final V vref2;
 
-		private final MembranePart eref;
+		private final E eref;
 
-		private final MembranePart out;
+		private final E out;
 
-		private final Junction oldpivot;
+		private final V oldpivot;
 
 		private boolean started;
 
 		private final boolean iscw;
 
-		private FaceIterator( final MembranePart start, final boolean iscw )
+		private FaceIterator( final E start, final boolean iscw )
 		{
 			this.start = start;
 			this.iscw = iscw;
@@ -70,22 +73,22 @@ public class FaceIteratorGen
 		private void prefetch()
 		{
 			started = true;
-			final AllEdges< MembranePart > edges = pivot.edges();
+			final Edges< E > edges = pivot.edges();
 			if ( edges.size() == 1 )
 			{
 				// This vertex has only 1 edge. So we walk back.
-				JunctionGraphUtils.junctionAcross( next, pivot, vref1 );
+				JunctionGraphUtils.vertexAcross( next, pivot, vref1 );
 				pivot.refTo( vref1 );
 				return;
 			}
 
 			double thetaBound = iscw ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;
-			for ( final MembranePart candidate : edges )
+			for ( final E candidate : edges )
 			{
 				if ( candidate.equals( next ) )
 					continue;
 
-				final double theta = angle( pivot, next, candidate, vref1, vref2 );
+				final double theta = JunctionGraphUtils.angle( pivot, next, candidate, vref1, vref2 );
 				if ( iscw ? theta < thetaBound : theta > thetaBound )
 				{
 					thetaBound = theta;
@@ -93,7 +96,7 @@ public class FaceIteratorGen
 				}
 			}
 			next.refTo( eref );
-			JunctionGraphUtils.junctionAcross( next, pivot, vref1 );
+			JunctionGraphUtils.vertexAcross( next, pivot, vref1 );
 			oldpivot.refTo( pivot );
 			pivot.refTo( vref1 );
 		}
@@ -105,7 +108,7 @@ public class FaceIteratorGen
 		}
 
 		@Override
-		public MembranePart next()
+		public E next()
 		{
 			out.refTo( next );
 			prefetch();
@@ -122,28 +125,5 @@ public class FaceIteratorGen
 		{
 			return !isCW();
 		}
-	}
-
-	public static final double angle(
-					final Junction pivot,
-					final MembranePart v1,
-					final MembranePart v2,
-					final Junction vref1,
-					final Junction vref2 )
-	{
-		final Junction s1 = JunctionGraphUtils.junctionAcross( v1, pivot, vref1 );
-		final double dx1 = pivot.getDoublePosition( 0 ) - s1.getDoublePosition( 0 );
-		final double dy1 = pivot.getDoublePosition( 1 ) - s1.getDoublePosition( 1 );
-		final double alpha1 = Math.atan2( dy1, dx1 );
-
-		final Junction t2 = JunctionGraphUtils.junctionAcross( v2, pivot, vref2 );
-		final double dx2 = t2.getDoublePosition( 0 ) - pivot.getDoublePosition( 0 );
-		final double dy2 = t2.getDoublePosition( 1 ) - pivot.getDoublePosition( 1 );
-		final double alpha2 = Math.atan2( dy2, dx2 );
-
-		// Normalize from -pi to pi;
-		double theta = alpha2 - alpha1;
-		theta = theta - 2. * Math.PI * Math.floor( ( theta + Math.PI ) / ( 2. * Math.PI ) );
-		return theta;
 	}
 }
