@@ -288,11 +288,21 @@ public class EditJunctionBehaviours< V extends JunctionOverlayVertex< V, E >, E 
 					{
 						target.localize( overlay.to );
 
-						final E edge = overlayGraph.getEdge( source, target, edgeRef );
-						// FIXME something wrong here. After 2 cells are merged.
+						// Test forward.
+						E edge = overlayGraph.getEdge( source, target, edgeRef );
 						if ( null == edge )
 						{
-							addEdge( source, target );
+							// Test backward.
+							edge = overlayGraph.getEdge( target, source, edgeRef );
+							if ( edge == null )
+							{
+								// We are now sure there isn't an edge between source and target.
+								addEdge( source, target );
+							}
+							else
+							{
+								removeEdge( edge );
+							}
 						}
 						else
 						{
