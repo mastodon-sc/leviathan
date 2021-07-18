@@ -112,12 +112,17 @@ public class MaskImporter< T extends RealType< T > >
 		 */
 
 		final RefList< Junction > toRemove = RefCollections.createRefList( graph.vertices() );
-		for ( final Junction junction : graph.vertices() )
-			if ( junction.edges().size() == 1 )
-				toRemove.add( junction );
+		do
+		{
+			for ( final Junction v : toRemove )
+				graph.remove( v );
 
-		for ( final Junction v : toRemove )
-			graph.remove( v );
+			toRemove.clear();
+			for ( final Junction junction : graph.vertices() )
+				if ( junction.edges().size() == 1 )
+					toRemove.add( junction );
+		}
+		while ( !toRemove.isEmpty() );
 	}
 
 	private void walkBranch( final Point stem, final Junction source )
