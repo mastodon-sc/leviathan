@@ -5,6 +5,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.mastodon.collection.RefCollections;
+import org.mastodon.collection.RefList;
 import org.mastodon.leviathan.model.junction.Junction;
 import org.mastodon.leviathan.model.junction.JunctionGraph;
 import org.mastodon.leviathan.model.junction.MembranePart;
@@ -105,6 +107,17 @@ public class MaskImporter< T extends RealType< T > >
 		}
 		graph.releaseRef( ref1 );
 
+		/*
+		 * Prune solitary junctions.
+		 */
+
+		final RefList< Junction > toRemove = RefCollections.createRefList( graph.vertices() );
+		for ( final Junction junction : graph.vertices() )
+			if ( junction.edges().size() == 1 )
+				toRemove.add( junction );
+
+		for ( final Junction v : toRemove )
+			graph.remove( v );
 	}
 
 	private void walkBranch( final Point stem, final Junction source )
