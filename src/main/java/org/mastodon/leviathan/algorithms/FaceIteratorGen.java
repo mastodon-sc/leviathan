@@ -77,7 +77,7 @@ public class FaceIteratorGen< V extends Vertex< E > & Ref< V > & RealLocalizable
 			if ( edges.size() == 1 )
 			{
 				// This vertex has only 1 edge. So we walk back.
-				JunctionGraphUtils.vertexAcross( next, pivot, vref1 );
+				GraphUtils.vertexAcross( next, pivot, vref1 );
 				pivot.refTo( vref1 );
 				return;
 			}
@@ -88,7 +88,7 @@ public class FaceIteratorGen< V extends Vertex< E > & Ref< V > & RealLocalizable
 				if ( candidate.equals( next ) )
 					continue;
 
-				final double theta = JunctionGraphUtils.angle( pivot, next, candidate, vref1, vref2 );
+				final double theta = GraphUtils.angle( pivot, next, candidate, vref1, vref2 );
 				if ( iscw ? theta < thetaBound : theta > thetaBound )
 				{
 					thetaBound = theta;
@@ -96,7 +96,7 @@ public class FaceIteratorGen< V extends Vertex< E > & Ref< V > & RealLocalizable
 				}
 			}
 			next.refTo( eref );
-			JunctionGraphUtils.vertexAcross( next, pivot, vref1 );
+			GraphUtils.vertexAcross( next, pivot, vref1 );
 			oldpivot.refTo( pivot );
 			pivot.refTo( vref1 );
 		}

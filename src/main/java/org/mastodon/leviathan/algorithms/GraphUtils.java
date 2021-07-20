@@ -6,7 +6,7 @@ import org.mastodon.leviathan.model.cell.Cell;
 
 import net.imglib2.RealLocalizable;
 
-public class JunctionGraphUtils
+public class GraphUtils
 {
 
 	public static final double signedArea( final Cell cell )
@@ -65,6 +65,6 @@ public class JunctionGraphUtils
 		return theta;
 	}
 
-	private JunctionGraphUtils()
+	private GraphUtils()
 	{}
 }

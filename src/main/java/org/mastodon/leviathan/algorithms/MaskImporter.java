@@ -123,7 +123,7 @@ public class MaskImporter< T extends RealType< T > >
 				// of vertices we should inspect in the next iteration.
 				for ( final MembranePart e : v.edges() )
 				{
-					final Junction other = JunctionGraphUtils.vertexAcross( e, v, ref );
+					final Junction other = GraphUtils.vertexAcross( e, v, ref );
 					toInspect.add( other );
 				}
 				// Remove them. Now their neighbors might be lonely as well, but

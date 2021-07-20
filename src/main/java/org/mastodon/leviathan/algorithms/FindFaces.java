@@ -148,7 +148,7 @@ public class FindFaces
 		double maxArea = Double.NEGATIVE_INFINITY;
 		for ( final Cell cell : neighborCells )
 		{
-			final double area = Math.abs( JunctionGraphUtils.signedArea( cell ) );
+			final double area = Math.abs( GraphUtils.signedArea( cell ) );
 			if ( area > maxArea )
 			{
 				maxArea = area;

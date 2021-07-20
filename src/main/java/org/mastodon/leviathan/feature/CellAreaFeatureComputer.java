@@ -28,7 +28,7 @@
  */
 package org.mastodon.leviathan.feature;
 
-import static org.mastodon.leviathan.algorithms.JunctionGraphUtils.signedArea;
+import static org.mastodon.leviathan.algorithms.GraphUtils.signedArea;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
