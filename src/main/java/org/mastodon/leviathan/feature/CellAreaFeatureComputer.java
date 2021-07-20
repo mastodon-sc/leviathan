@@ -28,6 +28,8 @@
  */
 package org.mastodon.leviathan.feature;
 
+import static org.mastodon.leviathan.algorithms.JunctionGraphUtils.signedArea;
+
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.mastodon.feature.Dimension;
@@ -87,24 +89,5 @@ public class CellAreaFeatureComputer implements CellFeatureComputer
 			output = new CellAreaFeature(
 					new DoublePropertyMap<>( model.getGraph().vertices().getRefPool(), Double.NaN ),
 					Dimension.AREA.getUnits( model.getSpaceUnits(), model.getTimeUnits() ) );
-	}
-
-	private static final double signedArea( final double[] boundary )
-	{
-		double a = 0.0;
-		for ( int i = 0; i < boundary.length - 3; i = i + 2 )
-		{
-			final double x0 = boundary[ i ];
-			final double y0 = boundary[ i + 1 ];
-			final double x1 = boundary[ i + 2 ];
-			final double y1 = boundary[ i + 3 ];
-			a += x0 * y1 - x1 * y0;
-		}
-		final double x0 = boundary[ 0 ];
-		final double y0 = boundary[ 1 ];
-		final double x1 = boundary[ boundary.length - 2 ];
-		final double y1 = boundary[ boundary.length - 1 ];
-
-		return ( a + x1 * y0 - x0 * y1 ) / 2.0;
 	}
 }

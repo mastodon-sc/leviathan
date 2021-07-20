@@ -2,11 +2,36 @@ package org.mastodon.leviathan.algorithms;
 
 import org.mastodon.graph.Edge;
 import org.mastodon.graph.Vertex;
+import org.mastodon.leviathan.model.cell.Cell;
 
 import net.imglib2.RealLocalizable;
 
 public class JunctionGraphUtils
 {
+
+	public static final double signedArea( final Cell cell )
+	{
+		return signedArea( cell.getBoundary() );
+	}
+
+	public static final double signedArea( final double[] boundary )
+	{
+		double a = 0.0;
+		for ( int i = 0; i < boundary.length - 3; i = i + 2 )
+		{
+			final double x0 = boundary[ i ];
+			final double y0 = boundary[ i + 1 ];
+			final double x1 = boundary[ i + 2 ];
+			final double y1 = boundary[ i + 3 ];
+			a += x0 * y1 - x1 * y0;
+		}
+		final double x0 = boundary[ 0 ];
+		final double y0 = boundary[ 1 ];
+		final double x1 = boundary[ boundary.length - 2 ];
+		final double y1 = boundary[ boundary.length - 1 ];
+
+		return ( a + x1 * y0 - x0 * y1 ) / 2.0;
+	}
 
 	public static final < V extends Vertex< E >, E extends Edge< V > > V vertexAcross( final E edge, final V vertex, final V ref )
 	{
