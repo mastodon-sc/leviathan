@@ -10,16 +10,14 @@ import org.mastodon.leviathan.model.junction.JunctionGraph;
 import org.mastodon.leviathan.model.junction.JunctionModel;
 import org.mastodon.leviathan.model.junction.MembranePart;
 
+import gnu.trove.set.hash.TIntHashSet;
+
 public class FindFaces
 {
-
-	private static final int DEFAULT_MAX_NPARTS = 20;
 
 	private final JunctionGraph junctionGraph;
 
 	private final CellGraph cellGraph;
-
-	private final int maxNParts;
 
 	private final MembraneConcatenator mbcat;
 
@@ -28,9 +26,7 @@ public class FindFaces
 	/**
 	 * Creates a {@link CellModel} from the junction graph in the specified
 	 * junction model. Cells are created from the faces of the junction graph.
-	 * There is also a big cell created for the periphery of the tissue.
-	 * 
-	 * TODO deal with time later.
+	 * The cell corresponding to the perimeter of the tissue is cleared.
 	 * 
 	 * @param junctionModel
 	 *            the junction model.
@@ -44,6 +40,17 @@ public class FindFaces
 		return cellModel;
 	}
 
+	/**
+	 * Add cell vertices to the specified cell graph from the specified junction
+	 * graph. Cells are created from the faces of the junction graph. The cell
+	 * corresponding to the perimeter of the tissue is cleared. The specified
+	 * cell graph should be cleared before calling this method.
+	 * 
+	 * @param junctionGraph
+	 *            the junction graph.
+	 * @param cellGraph
+	 *            the cell graph/
+	 */
 	public static void findFaces( final JunctionGraph junctionGraph, final CellGraph cellGraph )
 	{
 		final FindFaces faceFinder = create( junctionGraph, cellGraph );
@@ -52,19 +59,25 @@ public class FindFaces
 
 	public static FindFaces create( final JunctionGraph junctionGraph, final CellGraph cellGraph )
 	{
-		return new FindFaces( junctionGraph, cellGraph, DEFAULT_MAX_NPARTS );
+		return new FindFaces( junctionGraph, cellGraph );
 	}
 
-	private FindFaces( final JunctionGraph junctionGraph, final CellGraph cellGraph, final int maxNParts )
+	private FindFaces( final JunctionGraph junctionGraph, final CellGraph cellGraph )
 	{
 		this.junctionGraph = junctionGraph;
 		this.cellGraph = cellGraph;
-		this.maxNParts = maxNParts;
 		this.itgen = new FaceIteratorGen<>( junctionGraph );
 		this.mbcat = new MembraneConcatenator();
 	}
 
 	private void process()
+	{
+		resetJunctionGraph();
+		discoverCells();
+		removePerimeterCell();
+	}
+
+	private void resetJunctionGraph()
 	{
 		// Reset junction graph.
 		for ( final MembranePart edge : junctionGraph.edges() )
@@ -72,6 +85,10 @@ public class FindFaces
 			edge.setCellIdCCW( MembranePart.UNINITIALIZED );
 			edge.setCellIdCW( MembranePart.UNINITIALIZED );
 		}
+	}
+
+	private void discoverCells()
+	{
 
 		final Junction vref1 = junctionGraph.vertexRef();
 		final Junction vref2 = junctionGraph.vertexRef();
@@ -88,33 +105,60 @@ public class FindFaces
 		junctionGraph.releaseRef( vref1 );
 		junctionGraph.releaseRef( vref2 );
 		cellGraph.releaseRef( cref );
+	}
 
-		// Prune large cells.
-		final MembranePart eref = junctionGraph.edgeRef();
-		final RefList< Cell > toRemove = RefCollections.createRefList( cellGraph.vertices() );
-		for ( final Cell cell : cellGraph.vertices() )
+	/**
+	 * Remove the perimeter cell. We detect it as the largest (in area) cell
+	 * that is next to a junction on the convex hull of the tissue.
+	 */
+	private void removePerimeterCell()
+	{
+		// Get a junction on the convex hull. One with the minimal Y value will
+		// do.
+		double minY = Double.POSITIVE_INFINITY;
+		final Junction lowestJunction = junctionGraph.vertexRef();
+		for ( final Junction j : junctionGraph.vertices() )
 		{
-			final int[] mbids = cell.getMembranes();
-			if ( mbids.length > maxNParts )
+			final double y = j.getDoublePosition( 1 );
+			if ( y < minY )
 			{
-				// Remove it from the cell graph, and edit the cell if stored in
-				// the membrane parts.
-				toRemove.add( cell );
-				final int cellid = cell.getInternalPoolIndex();
-				for ( final int mbid : mbids )
-				{
-					final MembranePart mb = junctionGraph.getGraphIdBimap().getEdge( mbid, eref );
-					if (mb.getCellIdCW() == cellid)
-						mb.setCellIdCW( MembranePart.PERIMETER );
-					if ( mb.getCellIdCCW() == cellid )
-						mb.setCellIdCCW( MembranePart.PERIMETER );
-				}
+				minY = y;
+				lowestJunction.refTo( j );
 			}
 		}
-		junctionGraph.releaseRef( eref );
 
-		for ( final Cell cell : toRemove )
-			cellGraph.remove( cell );
+		// Get all the cells around this junction.
+		final TIntHashSet idset = new TIntHashSet();
+		for ( final MembranePart mb : lowestJunction.edges() )
+		{
+			idset.add( mb.getCellIdCW() );
+			idset.add( mb.getCellIdCCW() );
+		}
+		junctionGraph.releaseRef( lowestJunction );
+
+		final RefList< Cell > neighborCells = RefCollections.createRefList( cellGraph.vertices() );
+		final Cell cref = cellGraph.vertexRef();
+		for ( final int id : idset.toArray() )
+		{
+			final Cell cell = cellGraph.getGraphIdBimap().getVertex( id, cref );
+			neighborCells.add( cell );
+		}
+		
+		// Find the one with the largest area.
+		double maxArea = Double.NEGATIVE_INFINITY;
+		for ( final Cell cell : neighborCells )
+		{
+			final double area = Math.abs( JunctionGraphUtils.signedArea( cell ) );
+			if ( area > maxArea )
+			{
+				maxArea = area;
+				cref.refTo( cell );
+			}
+		}
+
+		// Delete it.
+		cellGraph.remove( cref );
+		cellGraph.releaseRef( cref );
 	}
 
 	private void processEdge(
