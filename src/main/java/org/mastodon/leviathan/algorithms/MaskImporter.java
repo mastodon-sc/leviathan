@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.mastodon.collection.RefCollection;
 import org.mastodon.collection.RefCollections;
 import org.mastodon.collection.RefList;
 import org.mastodon.leviathan.model.junction.Junction;
@@ -112,15 +113,32 @@ public class MaskImporter< T extends RealType< T > >
 		 */
 
 		final RefList< Junction > toRemove = RefCollections.createRefList( graph.vertices() );
+		RefCollection< Junction > toInspect = graph.vertices();
+		final Junction ref = graph.vertexRef();
 		do
 		{
 			for ( final Junction v : toRemove )
+			{
+				// Before we remove them, add their neighbor to the collection
+				// of vertices we should inspect in the next iteration.
+				for ( final MembranePart e : v.edges() )
+				{
+					final Junction other = JunctionGraphUtils.vertexAcross( e, v, ref );
+					toInspect.add( other );
+				}
+				// Remove them. Now their neighbors might be lonely as well, but
+				// we will inspect them later.
 				graph.remove( v );
-
+			}
 			toRemove.clear();
-			for ( final Junction junction : graph.vertices() )
+
+			// Inspect vertices to check if they are lonely.
+			for ( final Junction junction : toInspect )
+			{
 				if ( junction.edges().size() == 1 )
 					toRemove.add( junction );
+			}
+			toInspect = RefCollections.createRefList( graph.vertices() );
 		}
 		while ( !toRemove.isEmpty() );
 	}
