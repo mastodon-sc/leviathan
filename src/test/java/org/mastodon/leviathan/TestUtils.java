@@ -92,10 +92,10 @@ public class TestUtils
 		membranes.add( ij );
 		membranes.add( jc );
 
-		final Junction K = junctionGraph.addVertex().init( 0, new double[] { 50, 0 } );
-		final Junction L = junctionGraph.addVertex().init( 0, new double[] { 60, 10 } );
-		final Junction M = junctionGraph.addVertex().init( 0, new double[] { 60, 20 } );
-		final Junction N = junctionGraph.addVertex().init( 0, new double[] { 50, 30 } );
+		final Junction K = junctionGraph.addVertex().init( 0, new double[] { 70, -10 } );
+		final Junction L = junctionGraph.addVertex().init( 0, new double[] { 80, 10 } );
+		final Junction M = junctionGraph.addVertex().init( 0, new double[] { 80, 20 } );
+		final Junction N = junctionGraph.addVertex().init( 0, new double[] { 70, 30 } );
 		junctions.add( K );
 		junctions.add( L );
 		junctions.add( M );
