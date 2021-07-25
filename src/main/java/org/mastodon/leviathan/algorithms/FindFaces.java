@@ -143,7 +143,7 @@ public class FindFaces
 			final Cell cell = cellGraph.getGraphIdBimap().getVertex( id, cref );
 			neighborCells.add( cell );
 		}
-		
+
 		// Find the one with the largest area.
 		double maxArea = Double.NEGATIVE_INFINITY;
 		for ( final Cell cell : neighborCells )
@@ -156,7 +156,21 @@ public class FindFaces
 			}
 		}
 
-		// Delete it.
+		// Mark the membranes of this cell as belonging to the perimeter.
+		final int perimeterId = cref.getInternalPoolIndex();
+		final MembranePart eref = junctionGraph.edgeRef();
+		final int[] membranes = cref.getMembranes();
+		for ( final int mbid : membranes )
+		{
+			final MembranePart mb = junctionGraph.getGraphIdBimap().getEdge( mbid, eref );
+			if ( mb.getCellIdCW() == perimeterId )
+				mb.setCellIdCW( MembranePart.PERIMETER );
+			if ( mb.getCellIdCCW() == perimeterId )
+				mb.setCellIdCCW( MembranePart.PERIMETER );
+		}
+		junctionGraph.releaseRef( eref );
+
+		// Delete the large cell.
 		cellGraph.remove( cref );
 		cellGraph.releaseRef( cref );
 	}
@@ -224,32 +238,56 @@ public class FindFaces
 		boolean connected = false;
 		final MembranePart connectingEdge = junctionGraph.edgeRef();
 		final Junction jref = junctionGraph.vertexRef();
+
+		System.out.println( "Iterating CW from " + source ); // DEBUG
 		for ( final MembranePart mb : source.edges() )
 		{
-			final FaceIteratorGen< Junction, MembranePart >.FaceIterator itcw = itgen.iterateCW( mb );
-			while ( itcw.hasNext() )
+			System.out.println( "Testing starting from " + mb ); // DEBUG
+			System.out.println( " - CW cell is " + mb.getCellIdCW() ); // DEBUG
+			if ( mb.getCellIdCW() == MembranePart.PERIMETER )
 			{
-				final MembranePart e = itcw.next();
-				if ( e.getSource( jref ).equals( target ) || e.getTarget( jref ).equals( target ) )
-				{
-					connectingEdge.refTo( mb );
-					iscw = true;
-					connected = true;
-					break;
-				}
+				System.out.println( " - Going through the perimeter. Skipping." ); // DEBUG
 			}
-			if ( connected )
-				break;
-			final FaceIteratorGen< Junction, MembranePart >.FaceIterator itccw = itgen.iterateCCW( mb );
-			while ( itccw.hasNext() )
+			else
 			{
-				final MembranePart e = itccw.next();
-				if ( e.getSource( jref ).equals( target ) || e.getTarget( jref ).equals( target ) )
+				final FaceIteratorGen< Junction, MembranePart >.FaceIterator itcw = itgen.iterateCW( mb );
+				while ( itcw.hasNext() )
 				{
-					connectingEdge.refTo( mb );
-					iscw = false;
-					connected = true;
+					final MembranePart e = itcw.next();
+					if ( e.getSource( jref ).equals( target ) || e.getTarget( jref ).equals( target ) )
+					{
+						connectingEdge.refTo( mb );
+						iscw = true;
+						connected = true;
+						System.out.println( "Iterating CW, found a path to the target." ); // DEBUG
+						break;
+					}
+				}
+				if ( connected )
 					break;
+			}
+
+			System.out.println( "Iterating CCW from " + source ); // DEBUG
+			System.out.println( " - CCW cell is " + mb.getCellIdCCW() ); // DEBUG
+			if ( mb.getCellIdCCW() == MembranePart.PERIMETER )
+			{
+				System.out.println( " - Going through the perimeter. Skipping." ); // DEBUG
+			}
+			else
+			{
+
+				final FaceIteratorGen< Junction, MembranePart >.FaceIterator itccw = itgen.iterateCCW( mb );
+				while ( itccw.hasNext() )
+				{
+					final MembranePart e = itccw.next();
+					if ( e.getSource( jref ).equals( target ) || e.getTarget( jref ).equals( target ) )
+					{
+						connectingEdge.refTo( mb );
+						iscw = false;
+						connected = true;
+						System.out.println( "Iterating CCW, found a path to the target." ); // DEBUG
+						break;
+					}
 				}
 			}
 			if ( connected )
@@ -257,17 +295,27 @@ public class FindFaces
 		}
 		junctionGraph.releaseRef( jref );
 		if ( !connected )
+		{
+			System.out.println( "Could not find a path from " + source + " to " + target + " via a cell. Returning." ); // DEBUG
 			return null;
+		}
 
 		// Refs.
-		final Junction vref1 = junctionGraph.vertexRef();
-		final Junction vref2 = junctionGraph.vertexRef();
 		final Cell cref1 = cellGraph.vertexRef();
-		final Cell cref2 = cellGraph.vertexRef();
 
 		// What cell shall we split?
 		final int cellid = iscw ? connectingEdge.getCellIdCW() : connectingEdge.getCellIdCCW();
 		final Cell cell = cellGraph.getGraphIdBimap().getVertex( cellid, cref1 );
+
+		System.out.println( "The cell to split is " + cell ); // DEBUG
+
+		System.out.println( "Current vertices in the graph: " + cellGraph.vertices() ); // DEBUG
+
+		// Remove the cell we want to split.
+		System.out.println( "Removing cell " + cell ); // DEBUG
+		cellGraph.remove( cell );
+
+		System.out.println( "Current vertices in the graph: " + cellGraph.vertices() ); // DEBUG
 
 		// Add the new membrane part.
 		final MembranePart newEdge = junctionGraph.addEdge( source, target, eref ).init();
@@ -282,14 +330,19 @@ public class FindFaces
 		pixels[ 3 ] = pos[ 1 ];
 		newEdge.setPixels( pixels );
 
+		System.out.println( "Adding a new membrane edge: " + newEdge ); // DEBUG
+
 		// Create and add two new cells around the new edge.
+		final Cell cref2 = cellGraph.vertexRef();
+		final Junction vref1 = junctionGraph.vertexRef();
+		final Junction vref2 = junctionGraph.vertexRef();
+
 		final RefList< MembranePart > face = RefCollections.createRefList( junctionGraph.edges() );
-
+		System.out.println( "Processing the new edge CW" ); // DEBUG
 		processEdge( newEdge, face, true, vref1, vref2, cref2 );
+		System.out.println( "Iterated through: " + face ); // DEBUG
+		face.clear();
 		processEdge( newEdge, face, false, vref1, vref2, cref2 );
-
-		// Remove the cell we just split.
-		cellGraph.remove( cell );
 
 		// Return.
 		junctionGraph.releaseRef( vref1 );
